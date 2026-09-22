@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+
+# Django
+staticfiles/
+*.log
+local_settings.py
+
+# Vercel & IDE
+.vercel
+.idea/
+.vscode/
+.DS_Store
+*.swp
+.env
