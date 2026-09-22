@@ -11,6 +11,15 @@ sys.path.append(str(path / "apps"))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.production')
 
 from django.core.wsgi import get_wsgi_application
+from django.core.management import call_command
+
+# Automatic static files collection check for Vercel Serverless environment
+staticfiles_dir = path / "staticfiles"
+if not staticfiles_dir.exists() or not any(staticfiles_dir.iterdir()):
+    try:
+        call_command('collectstatic', interactive=False, clear=True)
+    except Exception as e:
+        print(f"Auto collectstatic warning: {e}")
 
 application = get_wsgi_application()
 
