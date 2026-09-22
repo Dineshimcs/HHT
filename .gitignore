@@ -8,7 +8,6 @@ venv/
 ENV/
 
 # Django
-staticfiles/
 *.log
 local_settings.py
 
