@@ -1,0 +1,37 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sign In - {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container flex items-center justify-center" style="min-height: calc(100vh - var(--header-height) - 100px); padding: 3rem 1.5rem;">
+  <div class="card" style="width: 100%; max-width: 440px; padding: 2.5rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <div data-aura-logo="icon" data-width="56" data-height="56" style="margin: 0 auto 1rem;"></div>
+      <h2>Welcome Back</h2>
+      <p style="font-size: 0.9rem; color: var(--color-text-muted);">Sign in to your AURA Mobility account</p>
+    </div>
+
+    <form method="POST" action="{% url 'accounts:login' %}">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label class="form-label">Username or Email</label>
+        <input type="text" name="username" class="form-input" required placeholder="Enter username">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" name="password" class="form-input" required placeholder="••••••••">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1rem;">
+        Sign In →
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--color-text-muted);">
+      Don't have an account? <a href="{% url 'accounts:register_customer' %}" style="font-weight: bold;">Sign Up</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

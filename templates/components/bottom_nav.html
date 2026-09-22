@@ -1,0 +1,114 @@
+<!-- Mobile App Bottom Navigation Bar (PWA Native Feel) -->
+<nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+  <a href="{% url 'landing' %}" class="nav-tab {% if request.resolver_match.url_name == 'landing' %}active{% endif %}">
+    <div class="nav-icon">🏠</div>
+    <span class="nav-label">Home</span>
+  </a>
+
+  <a href="{% url 'bookings:create' %}" class="nav-tab {% if request.resolver_match.view_name == 'bookings:create' %}active{% endif %}">
+    <div class="nav-icon">🚖</div>
+    <span class="nav-label">Book Ride</span>
+  </a>
+
+  {% if user.is_authenticated %}
+    <a href="{% url 'customers:history' %}" class="nav-tab {% if request.resolver_match.view_name == 'customers:history' %}active{% endif %}">
+      <div class="nav-icon">📜</div>
+      <span class="nav-label">Activity</span>
+    </a>
+
+    <a href="{% url 'customers:dashboard' %}" class="nav-tab {% if request.resolver_match.view_name == 'customers:dashboard' or request.resolver_match.view_name == 'drivers:dashboard' %}active{% endif %}">
+      <div class="nav-icon">👤</div>
+      <span class="nav-label">Account</span>
+    </a>
+  {% else %}
+    <a href="{% url 'accounts:login' %}" class="nav-tab {% if request.resolver_match.view_name == 'accounts:login' %}active{% endif %}">
+      <div class="nav-icon">🔑</div>
+      <span class="nav-label">Login</span>
+    </a>
+
+    <a href="{% url 'accounts:register_customer' %}" class="nav-tab {% if request.resolver_match.view_name == 'accounts:register_customer' %}active{% endif %}">
+      <div class="nav-icon">✨</div>
+      <span class="nav-label">Sign Up</span>
+    </a>
+  {% endif %}
+</nav>
+
+<style>
+  .mobile-bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(64px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: rgba(15, 23, 42, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 9999;
+    align-items: center;
+    justify-content: space-around;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  [data-theme="light"] .mobile-bottom-nav {
+    background: rgba(255, 255, 255, 0.94);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  .nav-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    color: #94A3B8;
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-icon {
+    font-size: 1.35rem;
+    margin-bottom: 2px;
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .nav-tab:active .nav-icon {
+    transform: scale(0.82);
+  }
+
+  .nav-tab.active {
+    color: var(--color-brand-blue, #2563EB);
+  }
+
+  .nav-tab.active .nav-icon {
+    transform: translateY(-2px) scale(1.1);
+  }
+
+  .nav-tab.active::after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    width: 20px;
+    height: 3px;
+    background: var(--color-brand-blue, #2563EB);
+    border-radius: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-bottom-nav {
+      display: flex;
+    }
+    body {
+      padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+  }
+</style>

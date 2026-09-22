@@ -1,0 +1,38 @@
+/* Live Trip Tracking CSS */
+.live-trip-sheet {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 92%;
+  max-width: 500px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-xl);
+  z-index: 500;
+}
+
+.driver-info-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-blue-subtle);
+  border: 2px solid var(--color-brand-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: var(--weight-bold);
+  color: var(--color-brand-blue);
+  font-size: 1.25rem;
+}
+
+.trip-eta-badge {
+  background-color: var(--color-brand-blue);
+  color: #FFFFFF;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-weight: var(--weight-bold);
+  font-size: 0.95rem;
+}

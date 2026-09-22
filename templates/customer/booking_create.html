@@ -1,0 +1,203 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Book a Ride - {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+  }
+  .autocomplete-item {
+    padding: 0.6rem 0.85rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    color: var(--color-text-primary);
+  }
+  .autocomplete-item:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-brand-blue);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="aura-view-section" id="view-booking">
+  <div class="booking-container">
+    
+    <!-- Left Panel: Booking Options Wizard -->
+    <div class="booking-panel">
+      <h2 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Where to?</h2>
+      <p style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">Select your route and preferred vehicle category.</p>
+
+      <form action="{% url 'bookings:create' %}" method="POST" id="booking-form">
+        {% csrf_token %}
+        
+        <!-- Booking Type Switcher -->
+        <div class="flex gap-2" style="margin-bottom: 1.5rem; background: var(--color-surface-hover); padding: 0.35rem; border-radius: var(--radius-md);">
+          <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; border: none; background: var(--color-surface);" onclick="document.getElementById('booking_type').value='TAXI';">🚕 Taxi Ride</button>
+          <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; border: none;" onclick="document.getElementById('booking_type').value='DRIVER_ONLY'; AuraBooking.selectVehicle('DRIVER_ONLY');">👨‍✈️ Hire Driver Only</button>
+        </div>
+        <input type="hidden" name="booking_type" id="booking_type" value="TAXI">
+
+        <div class="form-group" style="position: relative;">
+          <label class="form-label">Pickup Location</label>
+          <input type="text" id="pickup_address" name="pickup_address" class="form-input" value="Connaught Place, Inner Circle, New Delhi" autocomplete="off" required>
+          <div id="pickup_suggestions" class="autocomplete-dropdown"></div>
+        </div>
+
+        <div class="form-group" style="position: relative;">
+          <label class="form-label">Destination</label>
+          <input type="text" id="destination_address" name="destination_address" class="form-input" value="IGI Airport Terminal 3, New Delhi" autocomplete="off" required>
+          <div id="destination_suggestions" class="autocomplete-dropdown"></div>
+        </div>
+
+        <!-- Vehicle Category Selector -->
+        <h4 style="font-size: 1rem; margin: 1.5rem 0 0.75rem;">Vehicle Category</h4>
+        <input type="hidden" name="vehicle_category" id="selected_category_input" value="SEDAN">
+
+        <div class="vehicle-tier-card selected" data-category="SEDAN">
+          <div>
+            <div style="font-weight: bold; font-size: 1rem;">Economy Sedan</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Honda City or similar • 4 Seats</div>
+          </div>
+          <div class="vehicle-price">₹237</div>
+        </div>
+
+        <div class="vehicle-tier-card" data-category="SUV">
+          <div>
+            <div style="font-weight: bold; font-size: 1rem;">Executive SUV</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Toyota Innova or similar • 6 Seats</div>
+          </div>
+          <div class="vehicle-price">₹368</div>
+        </div>
+
+        <div class="vehicle-tier-card" data-category="PREMIUM">
+          <div>
+            <div style="font-weight: bold; font-size: 1rem;">Luxury Executive</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Mercedes E-Class or similar • 4 Seats</div>
+          </div>
+          <div class="vehicle-price">₹586</div>
+        </div>
+
+        <div class="vehicle-tier-card" data-category="DRIVER_ONLY">
+          <div>
+            <div style="font-weight: bold; font-size: 1rem;">Professional Driver Rental</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Chauffeur for your personal vehicle</div>
+          </div>
+          <div class="vehicle-price">₹350</div>
+        </div>
+
+        <!-- Total Fare Card -->
+        <div class="card" style="margin-top: 1.5rem; background: var(--color-brand-blue-subtle); border-color: rgba(37,99,235,0.2);">
+          <div class="flex items-center justify-between">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--color-brand-blue); font-weight: bold;">ESTIMATED FARE</div>
+              <div style="font-size: 0.85rem; color: var(--color-text-secondary);">Includes taxes & road routing</div>
+            </div>
+            <div id="aura-estimated-fare-display" style="font-size: 1.75rem; font-weight: 800; color: var(--color-brand-blue);">₹237</div>
+          </div>
+        </div>
+
+        <button type="button" id="btn-confirm-booking" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1.5rem;">
+          Confirm & Search Driver →
+        </button>
+      </form>
+    </div>
+
+    <!-- Right Panel: Interactive Route Map -->
+    <div class="map-view-container">
+      <div id="aura-booking-map" style="width: 100%; height: 100%;"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize Leaflet Map with OpenStreetMap / CARTO (Free, No Key)
+    const map = AuraMap.initMap('aura-booking-map', {
+      center: [28.6139, 77.2090],
+      zoom: 12
+    });
+
+    if (map) {
+      // Default Initial Pickup & Drop
+      const defaultPickup = [28.6315, 77.2167];
+      const defaultDrop = [28.5562, 77.1000];
+      AuraBooking.updateRoute(defaultPickup, defaultDrop);
+      AuraMap.updateDriverMarker('aura-booking-map', [28.6250, 77.2100]);
+    }
+
+    // Helper for setup address input autocompletion with OpenStreetMap Nominatim
+    function setupAddressAutocomplete(inputId, dropdownId, isPickup) {
+      const input = document.getElementById(inputId);
+      const dropdown = document.getElementById(dropdownId);
+      let debounceTimer = null;
+
+      if (!input || !dropdown) return;
+
+      input.addEventListener('input', (e) => {
+        const query = e.target.value;
+        clearTimeout(debounceTimer);
+        if (query.trim().length < 3) {
+          dropdown.style.display = 'none';
+          return;
+        }
+
+        debounceTimer = setTimeout(async () => {
+          const results = await AuraMap.searchAddress(query);
+          if (results.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+          }
+
+          dropdown.innerHTML = results.map(item => `
+            <div class="autocomplete-item" data-lat="${item.lat}" data-lon="${item.lon}">
+              📍 ${item.displayName}
+            </div>
+          `).join('');
+          dropdown.style.display = 'block';
+
+          dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', () => {
+              const lat = parseFloat(item.getAttribute('data-lat'));
+              const lon = parseFloat(item.getAttribute('data-lon'));
+              input.value = item.innerText.replace('📍 ', '').trim();
+              dropdown.style.display = 'none';
+
+              const coords = [lat, lon];
+              if (isPickup) {
+                AuraBooking.updateRoute(coords, null);
+              } else {
+                AuraBooking.updateRoute(null, coords);
+              }
+            });
+          });
+        }, 300);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    }
+
+    setupAddressAutocomplete('pickup_address', 'pickup_suggestions', true);
+    setupAddressAutocomplete('destination_address', 'destination_suggestions', false);
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Live Trip Status - {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="aura-view-section" id="view-live-trip">
+  <div style="position: relative; width: 100%; height: calc(100vh - var(--header-height)); overflow: hidden;">
+    
+    <!-- Fullscreen Map Container -->
+    <div id="aura-live-trip-map" style="width: 100%; height: 100%;"></div>
+
+    <!-- Floating Live Trip Bottom Sheet Overlay -->
+    <div class="live-trip-sheet">
+      <div class="flex items-center justify-between" style="margin-bottom: 1.25rem;">
+        <div>
+          <span class="badge badge-warning" id="trip-status-badge">Searching Driver</span>
+          <h3 style="font-size: 1.25rem; margin-top: 0.35rem;" id="trip-status-desc">Finding the best nearby driver for your ride...</h3>
+        </div>
+        <div class="trip-eta-badge" id="trip-eta-clock">
+          ETA 4 mins
+        </div>
+      </div>
+
+      <!-- Driver Details Card -->
+      <div class="card flex items-center justify-between" style="padding: 1rem 1.25rem; background: var(--color-surface-hover); margin-bottom: 1.25rem;">
+        <div class="flex items-center gap-4">
+          <div class="driver-info-avatar">RK</div>
+          <div>
+            <div style="font-weight: bold; font-size: 1.05rem;">Rajesh Kumar</div>
+            <div style="font-size: 0.85rem; color: var(--color-text-muted);">★ 4.9 (1,240 Trips) • White Honda City</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-brand-blue);">Reg: DL-01-AB-1234</div>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <a href="tel:+919876543210" class="btn btn-secondary btn-sm" title="Call Driver">📞 Call</a>
+        </div>
+      </div>
+
+      <!-- Route Address Summary -->
+      <div style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+        <div class="flex items-center gap-2">
+          <span style="color: var(--color-brand-blue); font-weight: bold;">●</span>
+          <span>Pickup: Connaught Place, Inner Circle, New Delhi</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span style="color: var(--color-accent); font-weight: bold;">●</span>
+          <span>Destination: IGI Airport Terminal 3, New Delhi</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3">
+        <button class="btn btn-danger" style="flex: 1;" onclick="if(confirm('Are you sure you want to cancel this trip?')) { AuraApp.showToast('Trip cancelled', 'danger'); AuraApp.switchView('booking'); }">
+          Cancel Trip
+        </button>
+        <button class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('sos-modal').classList.add('active');">
+          🚨 Emergency SOS
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Emergency SOS Modal -->
+<div class="modal-overlay" id="sos-modal">
+  <div class="modal-container">
+    <h3 style="color: var(--color-danger); margin-bottom: 0.5rem;">🚨 Emergency Safety SOS</h3>
+    <p style="margin-bottom: 1.5rem;">If you feel unsafe or require immediate assistance, our 24/7 security team and local emergency response will be notified with your live GPS location.</p>
+    
+    <div class="flex flex-col gap-3">
+      <button class="btn btn-danger btn-lg" onclick="alert('Emergency Alert Sent! Support team is contacting you and local authorities.'); document.getElementById('sos-modal').classList.remove('active');">
+        Confirm & Trigger Emergency Alert
+      </button>
+      <button class="btn btn-secondary" onclick="document.getElementById('sos-modal').classList.remove('active');">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const map = AuraMap.initMap('aura-live-trip-map', {
+      center: [28.6139, 77.2090],
+      zoom: 13
+    });
+
+    if (map) {
+      AuraMap.setMarkers('aura-live-trip-map', [28.6315, 77.2167], [28.5562, 77.1000]);
+      AuraMap.updateDriverMarker('aura-live-trip-map', [28.6280, 77.2120]);
+    }
+  });
+</script>
+{% endblock %}

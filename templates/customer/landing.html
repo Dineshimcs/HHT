@@ -1,0 +1,138 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ PLATFORM_NAME }} - Elevating Everyday Movement{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+  <div class="container hero-grid">
+    <div>
+      <div class="hero-badge">
+        <span>✦</span> Premium Transportation Platform
+      </div>
+      <h1 class="hero-title">
+        Move smarter.<br>
+        <span>Travel better.</span>
+      </h1>
+      <p class="hero-subtitle">
+        Book a premium city ride or hire a verified professional driver for your own vehicle with effortless real-time tracking and dynamic pricing.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="{% url 'bookings:create' %}" class="btn btn-primary btn-lg">
+          🚗 Book a Ride
+        </a>
+        <a href="{% url 'bookings:create' %}?type=DRIVER_ONLY" class="btn btn-accent btn-lg">
+          👨‍✈️ Hire a Professional Driver
+        </a>
+      </div>
+
+      <!-- Quick Search Widget -->
+      <div class="card" style="margin-top: 2.5rem; max-width: 540px;">
+        <h4 style="margin-bottom: 1rem;">Where are you going today?</h4>
+        <div class="form-group">
+          <label class="form-label">Pickup Location</label>
+          <input type="text" class="form-input" value="Connaught Place, New Delhi" placeholder="Enter pickup address">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Destination</label>
+          <input type="text" class="form-input" value="IGI Airport Terminal 3, New Delhi" placeholder="Where to?">
+        </div>
+        <a href="{% url 'bookings:create' %}" class="btn btn-primary" style="width: 100%;">
+          Get Fare Estimate & Book →
+        </a>
+      </div>
+    </div>
+
+    <!-- Generated Vector Hero Artwork -->
+    <div style="position: relative; width: 100%; height: 440px; border-radius: var(--radius-xl); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-lg);">
+      <canvas id="hero-vector-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+      <div style="position: absolute; bottom: 2rem; left: 2rem; right: 2rem; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); padding: 1.25rem 1.5rem; border-radius: var(--radius-lg); color: #FFF; border: 1px solid rgba(255,255,255,0.1);">
+        <div class="flex items-center justify-between">
+          <div>
+            <div style="font-size: 0.8rem; color: #94A3B8; text-transform: uppercase;">Active Fleet Nearby</div>
+            <div style="font-size: 1.25rem; font-weight: bold;">348 Verified Drivers Online</div>
+          </div>
+          <span class="badge badge-success">● LIVE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Service Categories -->
+<section style="padding: 5rem 0; background-color: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
+  <div class="container">
+    <div style="text-align: center; max-width: 640px; margin: 0 auto 3.5rem;">
+      <h2>Tailored Mobility Solutions</h2>
+      <p style="margin-top: 0.5rem;">Choose between full taxi booking or hiring a vetted chauffeur for your personal vehicle.</p>
+    </div>
+
+    <div class="grid grid-cols-4 gap-6">
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">🚘</div>
+        <h3>City Taxis</h3>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Comfortable sedan rides for everyday city commutes with transparent fares.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">👨‍✈️</div>
+        <h3>Driver Rental</h3>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Hire a professional driver to drive your personal vehicle safely by the hour.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">🚙</div>
+        <h3>Executive SUVs</h3>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Spacious 6-seater vehicles for family trips, airport runs, and group travel.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrapper">⭐</div>
+        <h3>Luxury Fleet</h3>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Premium luxury cars with top-rated executive chauffeurs for special occasions.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Safety & Trust Section -->
+<section style="padding: 5rem 0;">
+  <div class="container grid grid-cols-2 gap-8 items-center">
+    <div>
+      <h2>Your Safety is Our Top Priority</h2>
+      <p style="margin-top: 1rem; font-size: 1.05rem;">
+        Every driver undergoes rigorous background verification, document validation, and safety checks before joining our network.
+      </p>
+
+      <ul style="list-style: none; margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+        <li class="flex items-center gap-2">
+          <span style="color: var(--color-success); font-weight: bold;">✓</span> 100% Background-Vetted Professional Chauffeurs
+        </li>
+        <li class="flex items-center gap-2">
+          <span style="color: var(--color-success); font-weight: bold;">✓</span> Real-Time GPS Tracking & Shareable Trip Link
+        </li>
+        <li class="flex items-center gap-2">
+          <span style="color: var(--color-success); font-weight: bold;">✓</span> 24/7 Emergency SOS Button & Operations Desk
+        </li>
+      </ul>
+    </div>
+
+    <div class="card" style="padding: 2.5rem; background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-brand-blue-subtle) 100%);">
+      <h3 style="margin-bottom: 1rem;">Want to Drive & Earn?</h3>
+      <p style="margin-bottom: 1.5rem;">Join thousands of professional drivers earning daily payouts with transparent 15% platform commissions.</p>
+      <a href="{% url 'accounts:register_driver' %}" class="btn btn-primary">
+        Register as a Driver →
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    AuraGraphics.initVectorBackground('hero-vector-canvas');
+  });
+</script>
+{% endblock %}

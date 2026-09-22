@@ -1,0 +1,30 @@
+<header style="height: var(--header-height); background-color: var(--color-surface); border-bottom: 1px solid var(--color-border); position: sticky; top: 0; z-index: 800; box-shadow: var(--shadow-xs);">
+  <div class="container flex items-center justify-between" style="height: 100%;">
+    
+    <!-- Brand Logo -->
+    <a href="{% url 'landing' %}" class="flex items-center gap-2" style="text-decoration: none;">
+      <div data-aura-logo="full" data-width="170" data-height="44"></div>
+    </a>
+
+    <!-- Nav Links & Action Buttons -->
+    <nav class="flex items-center gap-6">
+      <a href="{% url 'landing' %}" style="font-weight: 500; color: var(--color-text-primary);">Home</a>
+      <a href="{% url 'bookings:create' %}" style="font-weight: 500; color: var(--color-text-primary);">Book a Ride</a>
+      <a href="{% url 'drivers:dashboard' %}" style="font-weight: 500; color: var(--color-text-primary);">Driver Portal</a>
+      <a href="{% url 'admin_ops:dashboard' %}" style="font-weight: 500; color: var(--color-text-primary);">Operations</a>
+
+      <!-- Dark Mode Toggle Button -->
+      <button data-theme-toggle class="btn btn-secondary btn-sm" title="Toggle Light/Dark Theme" style="border-radius: var(--radius-full); padding: 0.5rem 0.75rem;">
+        🌙 Theme
+      </button>
+
+      {% if user.is_authenticated %}
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted);">Hi, {{ user.first_name|default:user.username }}</span>
+        <a href="{% url 'accounts:logout' %}" class="btn btn-secondary btn-sm">Logout</a>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-sm">Login</a>
+        <a href="{% url 'accounts:register_customer' %}" class="btn btn-primary btn-sm">Sign Up</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>

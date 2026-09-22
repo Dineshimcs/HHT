@@ -1,0 +1,53 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Trip History - {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.5rem;">
+  <div style="margin-bottom: 2.5rem;">
+    <h2>Your Trip History</h2>
+    <p style="color: var(--color-text-muted);">View all past bookings, invoices, and driver ratings.</p>
+  </div>
+
+  <div class="data-table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Booking Ref</th>
+          <th>Type</th>
+          <th>Pickup ➔ Destination</th>
+          <th>Date</th>
+          <th>Fare</th>
+          <th>Status</th>
+          <th>Invoice</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for booking in bookings %}
+          <tr>
+            <td><strong>{{ booking.booking_reference }}</strong></td>
+            <td>{{ booking.get_booking_type_display }}</td>
+            <td>
+              <div style="font-weight: 500;">{{ booking.pickup_address|truncatechars:25 }}</div>
+              <div style="font-size: 0.8rem; color: var(--color-text-muted);">➔ {{ booking.destination_address|truncatechars:25 }}</div>
+            </td>
+            <td>{{ booking.created_at|date:"M d, Y H:i" }}</td>
+            <td><strong>₹{{ booking.final_fare|default:booking.estimated_fare }}</strong></td>
+            <td><span class="badge badge-success">{{ booking.get_status_display }}</span></td>
+            <td><a href="{% url 'bookings:detail' booking.id %}" class="btn btn-secondary btn-sm">View Details</a></td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 3rem 1rem;">
+              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🚗</div>
+              <h4>No trips completed yet</h4>
+              <p style="color: var(--color-text-muted); margin-bottom: 1.5rem;">Your completed bookings will appear here.</p>
+              <a href="{% url 'bookings:create' %}" class="btn btn-primary">Book Your First Ride</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Driver Verification & Operations - {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="aura-view-section" id="view-admin-drivers">
+  <div class="admin-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div style="margin-bottom: 2rem;">
+        <div data-aura-logo="full" data-width="160" data-height="40"></div>
+        <div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Operations Hub</div>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <a href="{% url 'admin_ops:dashboard' %}" style="padding: 0.75rem 1rem; border-radius: var(--radius-md); color: #94A3B8;">📊 Overview</a>
+        <a href="{% url 'admin_ops:drivers' %}" style="padding: 0.75rem 1rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.1); color: #FFF; font-weight: 600;">🚗 Driver Verification</a>
+        <a href="{% url 'bookings:create' %}" style="padding: 0.75rem 1rem; border-radius: var(--radius-md); color: #94A3B8;">🚕 Bookings Monitor</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-content">
+      <div class="flex items-center justify-between" style="margin-bottom: 2rem;">
+        <div>
+          <h2>Driver Fleet Management</h2>
+          <p style="color: var(--color-text-muted);">Review driver profiles, verify credentials, and manage active status.</p>
+        </div>
+        <span class="badge badge-info">TOTAL DRIVERS: {{ drivers|length }}</span>
+      </div>
+
+      <!-- Drivers Data Table -->
+      <div class="data-table-container">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border);" class="flex items-center justify-between">
+          <h3 style="font-size: 1.1rem;">Registered Drivers</h3>
+          <input type="text" id="admin-driver-search" class="form-input" placeholder="Search driver name, license..." style="width: 260px; padding: 0.4rem 0.85rem; font-size: 0.85rem;">
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Driver Info</th>
+              <th>Contact / Phone</th>
+              <th>License Details</th>
+              <th>Rating & Trips</th>
+              <th>Live Status</th>
+              <th>Verification</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-drivers-table-body">
+            {% for driver in drivers %}
+            <tr>
+              <td>
+                <strong>{{ driver.user.get_full_name|default:driver.user.username }}</strong>
+                <div style="font-size: 0.75rem; color: var(--color-text-muted);">@{{ driver.user.username }}</div>
+              </td>
+              <td>
+                <div>{{ driver.user.phone|default:"N/A" }}</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-muted);">{{ driver.user.email }}</div>
+              </td>
+              <td>
+                <strong>{{ driver.license_number }}</strong>
+                {% if driver.license_expiry %}
+                  <div style="font-size: 0.75rem; color: var(--color-text-muted);">Exp: {{ driver.license_expiry|date:"Y-m-d" }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <div>{{ driver.rating }} ★</div>
+                <div style="font-size: 0.75rem; color: var(--color-text-muted);">{{ driver.total_trips }} trips</div>
+              </td>
+              <td>
+                {% if driver.is_online %}
+                  {% if driver.is_busy %}
+                    <span class="badge badge-warning">On Trip</span>
+                  {% else %}
+                    <span class="badge badge-success">Online & Free</span>
+                  {% endif %}
+                {% else %}
+                  <span class="badge badge-info" style="opacity: 0.7;">Offline</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if driver.verification_status == 'VERIFIED' %}
+                  <span class="badge badge-success">Verified</span>
+                {% elif driver.verification_status == 'PENDING' %}
+                  <span class="badge badge-warning">Pending Review</span>
+                {% elif driver.verification_status == 'REJECTED' %}
+                  <span class="badge badge-danger">Rejected</span>
+                {% else %}
+                  <span class="badge badge-info">Unverified</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if driver.verification_status != 'VERIFIED' %}
+                  <a href="{% url 'admin_ops:verify_driver' driver.id %}" class="btn btn-primary btn-sm" style="font-size: 0.8rem; padding: 0.3rem 0.75rem;">Verify Driver</a>
+                {% else %}
+                  <span style="font-size: 0.85rem; color: var(--color-success); font-weight: 600;">✓ Verified</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">
+                No drivers registered yet.
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('admin-driver-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', function(e) {
+      const query = e.target.value.toLowerCase();
+      const rows = document.querySelectorAll('#admin-drivers-table-body tr');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(query) ? '' : 'none';
+      });
+    });
+  }
+});
+</script>
+{% endblock %}

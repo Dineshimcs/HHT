@@ -1,0 +1,81 @@
+/* Customer Booking Layout */
+.booking-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  height: calc(100vh - var(--header-height));
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .booking-container {
+    grid-template-columns: 460px 1fr;
+  }
+}
+
+@media (max-width: 991px) {
+  .booking-container {
+    display: flex;
+    flex-direction: column-reverse;
+    height: auto;
+    min-height: calc(100vh - var(--header-height) - 68px);
+    overflow: visible;
+  }
+
+  .map-view-container {
+    height: 340px;
+    min-height: 280px;
+    position: sticky;
+    top: var(--header-height);
+    z-index: 1;
+  }
+
+  .booking-panel {
+    border-right: none;
+    border-top: 1px solid var(--color-border);
+    padding: 1.25rem;
+    border-radius: 24px 24px 0 0;
+    margin-top: -24px;
+    z-index: 10;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.booking-panel {
+  background-color: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.map-view-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: var(--color-surface-hover);
+}
+
+.vehicle-tier-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.vehicle-tier-card:hover, .vehicle-tier-card.selected {
+  border-color: var(--color-brand-blue);
+  background-color: var(--color-brand-blue-subtle);
+}
+
+.vehicle-price {
+  font-size: 1.25rem;
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+}

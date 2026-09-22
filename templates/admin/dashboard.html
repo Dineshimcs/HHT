@@ -1,0 +1,114 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Operations Dashboard - {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="aura-view-section" id="view-admin">
+  <div class="admin-layout">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <div style="margin-bottom: 2rem;">
+        <div data-aura-logo="full" data-width="160" data-height="40"></div>
+        <div style="font-size: 0.75rem; color: #64748B; margin-top: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">Operations Hub</div>
+      </div>
+
+      <nav style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <a href="{% url 'admin_ops:dashboard' %}" style="padding: 0.75rem 1rem; border-radius: var(--radius-md); background: rgba(255,255,255,0.1); color: #FFF; font-weight: 600;">📊 Overview</a>
+        <a href="{% url 'admin_ops:drivers' %}" style="padding: 0.75rem 1rem; border-radius: var(--radius-md); color: #94A3B8;">🚗 Driver Verification</a>
+        <a href="{% url 'bookings:create' %}" style="padding: 0.75rem 1rem; border-radius: var(--radius-md); color: #94A3B8;">🚕 Bookings Monitor</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-content">
+      <div class="flex items-center justify-between" style="margin-bottom: 2rem;">
+        <div>
+          <h2>Operations Command Center</h2>
+          <p style="color: var(--color-text-muted);">Real-time monitoring of active trips, driver fleet availability, and revenue metrics.</p>
+        </div>
+        <span class="badge badge-success">SYSTEM HEALTH: 100% OPERATIONAL</span>
+      </div>
+
+      <!-- KPI Stat Cards Grid -->
+      <div class="grid grid-cols-4 gap-6" style="margin-bottom: 2rem;">
+        <div class="stat-kpi-card">
+          <div style="font-size: 0.8rem; color: var(--color-text-muted); font-weight: 600;">ACTIVE TRIPS</div>
+          <div class="stat-kpi-value">124</div>
+          <div style="font-size: 0.8rem; color: var(--color-success); margin-top: 0.25rem;">● Live on Map</div>
+        </div>
+
+        <div class="stat-kpi-card">
+          <div style="font-size: 0.8rem; color: var(--color-text-muted); font-weight: 600;">AVAILABLE DRIVERS</div>
+          <div class="stat-kpi-value">348</div>
+          <div style="font-size: 0.8rem; color: var(--color-brand-blue); margin-top: 0.25rem;">92% Verified</div>
+        </div>
+
+        <div class="stat-kpi-card">
+          <div style="font-size: 0.8rem; color: var(--color-text-muted); font-weight: 600;">TODAY'S REVENUE</div>
+          <div class="stat-kpi-value">₹1.84L</div>
+          <div style="font-size: 0.8rem; color: var(--color-success); margin-top: 0.25rem;">+14% WoW</div>
+        </div>
+
+        <div class="stat-kpi-card">
+          <div style="font-size: 0.8rem; color: var(--color-text-muted); font-weight: 600;">CANCELLATIONS</div>
+          <div class="stat-kpi-value">12</div>
+          <div style="font-size: 0.8rem; color: var(--color-danger); margin-top: 0.25rem;">1.2% Rate</div>
+        </div>
+      </div>
+
+      <!-- Active Bookings Data Table -->
+      <div class="data-table-container">
+        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border);" class="flex items-center justify-between">
+          <h3 style="font-size: 1.1rem;">Recent Booking Operations</h3>
+          <input type="text" id="admin-table-search" class="form-input" placeholder="Filter bookings..." style="width: 240px; padding: 0.4rem 0.85rem; font-size: 0.85rem;">
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Customer</th>
+              <th>Driver</th>
+              <th>Category</th>
+              <th>Fare</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admin-trips-table-body">
+            <tr>
+              <td><strong>AURA-8F92A1</strong></td>
+              <td>Vikram Sharma</td>
+              <td>Rajesh Kumar (4.9 ★)</td>
+              <td>Economy Sedan</td>
+              <td>₹237.00</td>
+              <td><span class="badge badge-info">IN TRANSIT</span></td>
+              <td><button class="btn btn-secondary btn-sm">Inspect</button></td>
+            </tr>
+            <tr>
+              <td><strong>AURA-3B11C4</strong></td>
+              <td>Ananya Roy</td>
+              <td>Suresh Verma (4.8 ★)</td>
+              <td>Executive SUV</td>
+              <td>₹450.00</td>
+              <td><span class="badge badge-success">COMPLETED</span></td>
+              <td><button class="btn btn-secondary btn-sm">Inspect</button></td>
+            </tr>
+            <tr>
+              <td><strong>AURA-9C44D8</strong></td>
+              <td>Amit Mehta</td>
+              <td><em>Unassigned</em></td>
+              <td>Driver Rental</td>
+              <td>₹350.00</td>
+              <td><span class="badge badge-warning">SEARCHING</span></td>
+              <td><button class="btn btn-primary btn-sm">Dispatch</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+</div>
+{% endblock %}

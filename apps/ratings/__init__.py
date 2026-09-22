@@ -1,0 +1,1 @@
+# Ratings package initialization
