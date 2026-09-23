@@ -1,106 +1,121 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Driver Partner Dashboard - {{ PLATFORM_NAME }}{% endblock %}
+{% block title %}Driver Portal - {{ PLATFORM_NAME }}{% endblock %}
 
 {% block content %}
-<div class="aura-view-section" id="view-driver">
-  <div class="container" style="padding: 2.5rem 1.5rem;">
-    
-    <!-- Top Status Control Bar -->
-    <div class="driver-status-bar">
-      <div>
-        <h2 style="font-size: 1.5rem;">Good morning, Rajesh</h2>
-        <div id="driver-online-label" style="font-weight: 600; font-size: 0.9rem; color: var(--color-text-muted); margin-top: 0.2rem;">
-          OFFLINE (Toggle switch to accept rides)
-        </div>
-      </div>
+<div class="mobile-app-shell">
 
-      <div class="flex items-center gap-3">
-        <label class="toggle-switch">
-          <input type="checkbox" id="driver-online-toggle">
-          <span class="toggle-slider"></span>
-        </label>
+  <!-- Mobile Driver Status Header -->
+  <div style="padding: 1.25rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border);" class="flex items-center justify-between">
+    <div>
+      <div style="font-weight: 800; font-size: 1.1rem; color: var(--color-text-primary);">
+        Driver Mode: {{ user.first_name|default:user.username }}
+      </div>
+      <div id="driver-online-label" style="font-weight: 700; font-size: 0.78rem; color: var(--color-success); margin-top: 2px;">
+        ● ONLINE & RECEIVING TRIPS
       </div>
     </div>
 
-    <!-- Earnings & KPI Overview -->
-    <div class="grid grid-cols-3 gap-6" style="margin-bottom: 2.5rem;">
-      <div class="card">
-        <div style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: 600;">TODAY'S EARNINGS</div>
-        <div style="font-size: 2.25rem; font-weight: 800; color: var(--color-text-primary); margin-top: 0.25rem;">₹2,450</div>
-        <div style="font-size: 0.8rem; color: var(--color-success); margin-top: 0.35rem;">+18% vs yesterday</div>
-      </div>
-
-      <div class="card">
-        <div style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: 600;">TRIPS COMPLETED</div>
-        <div style="font-size: 2.25rem; font-weight: 800; color: var(--color-text-primary); margin-top: 0.25rem;">8 Trips</div>
-        <div style="font-size: 0.8rem; color: var(--color-text-secondary); margin-top: 0.35rem;">Acceptance Rate: 96%</div>
-      </div>
-
-      <div class="card">
-        <div style="font-size: 0.85rem; color: var(--color-text-muted); font-weight: 600;">DRIVER RATING</div>
-        <div style="font-size: 2.25rem; font-weight: 800; color: var(--color-accent-dark); margin-top: 0.25rem;">4.9 ★</div>
-        <div style="font-size: 0.8rem; color: var(--color-text-secondary); margin-top: 0.35rem;">1,240 Total Reviews</div>
-      </div>
-    </div>
-
-    <!-- Driver Map & Activity Area -->
-    <div class="card" style="padding: 0; overflow: hidden;">
-      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--color-border);" class="flex items-center justify-between">
-        <h3 style="font-size: 1.1rem;">Live Fleet Navigation</h3>
-        <span class="badge badge-info">GPS ACTIVE</span>
-      </div>
-      <div id="aura-driver-map" style="width: 100%; height: 420px;"></div>
-    </div>
-
+    <!-- Mobile Online Toggle Switch -->
+    <label class="toggle-switch">
+      <input type="checkbox" id="driver-online-toggle" checked>
+      <span class="toggle-slider"></span>
+    </label>
   </div>
-</div>
 
-<!-- Incoming Ride Request Popup Modal -->
-<div class="modal-overlay" id="driver-request-modal">
-  <div class="modal-container" style="border-top: 6px solid var(--color-brand-blue);">
-    <div class="flex items-center justify-between" style="margin-bottom: 1rem;">
-      <span class="badge badge-warning">NEW RIDE REQUEST</span>
-      <div id="driver-request-timer" style="font-size: 1.25rem; font-weight: 800; color: var(--color-danger);">15s</div>
-    </div>
+  <!-- Driver Earnings & Stats Summary Card -->
+  <div style="padding: 1.25rem 1.25rem 0.5rem;">
+    <div class="card" style="border-radius: var(--radius-mobile-card); background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 100%); color: #FFFFFF; border: none; box-shadow: var(--shadow-md);">
+      <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94A3B8;">Today's Earnings</span>
+        <span class="badge badge-success" style="font-size: 0.7rem;">+24% vs last week</span>
+      </div>
 
-    <h3 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Pickup: 1.8 km away</h3>
-    <p style="color: var(--color-text-secondary); margin-bottom: 1.25rem;">Connaught Place ➔ IGI Airport T3</p>
+      <div style="font-size: 2.2rem; font-weight: 800; color: #FFFFFF; margin-bottom: 1rem;">
+        ₹{{ profile.wallet_balance|default:"3,450" }}
+      </div>
 
-    <div class="card" style="background: var(--color-surface-hover); padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
-      <div class="flex items-center justify-between">
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 0.75rem;">
         <div>
-          <div style="font-size: 0.8rem; color: var(--color-text-muted);">ESTIMATED EARNING</div>
-          <div style="font-size: 1.5rem; font-weight: 800; color: var(--color-success);">₹280.00</div>
+          <div style="font-size: 0.7rem; color: #94A3B8;">COMPLETED TRIPS</div>
+          <div style="font-size: 1rem; font-weight: 700; color: #FFFFFF;">{{ profile.total_trips|default:12 }} Rides</div>
         </div>
-        <div style="text-align: right;">
-          <div style="font-size: 0.8rem; color: var(--color-text-muted);">ESTIMATED TIME</div>
-          <div style="font-size: 1.1rem; font-weight: bold;">22 Mins</div>
+        <div>
+          <div style="font-size: 0.7rem; color: #94A3B8;">DRIVER RATING</div>
+          <div style="font-size: 1rem; font-weight: 700; color: var(--color-accent-light);">{{ profile.rating|default:"4.90" }} ★</div>
         </div>
       </div>
     </div>
-
-    <div class="flex gap-3">
-      <button id="btn-driver-accept" class="btn btn-primary btn-lg" style="flex: 1; background: var(--color-success);">
-        ACCEPT RIDE
-      </button>
-      <button id="btn-driver-decline" class="btn btn-secondary btn-lg" style="flex: 1;">
-        DECLINE
-      </button>
-    </div>
   </div>
+
+  <!-- Primary Action: Offer a Carpool Ride Button -->
+  <div style="padding: 0.5rem 1.25rem;">
+    <a href="{% url 'bookings:offer_ride' %}" class="btn btn-accent mobile-touch-active" style="width: 100%; border-radius: var(--radius-full); padding: 0.85rem; font-size: 0.95rem; font-weight: 700;">
+      🚀 Publish New Carpool Route →
+    </a>
+  </div>
+
+  <!-- Published Carpool Rides List -->
+  <div style="padding: 1rem 1.25rem 2rem;">
+    <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-text-primary); margin-bottom: 0.75rem;">
+      My Published Carpool Rides
+    </div>
+
+    {% if published_rides %}
+      {% for offer in published_rides %}
+        <div class="mobile-card-tile" style="display: flex; flex-direction: column; align-items: stretch; gap: 0.5rem;">
+          <div class="flex items-center justify-between">
+            <span class="badge badge-success" style="font-size: 0.7rem;">{{ offer.get_status_display }}</span>
+            <span style="font-size: 1.05rem; font-weight: 800; color: var(--color-success);">₹{{ offer.price_per_seat }} / seat</span>
+          </div>
+
+          <div style="font-size: 0.78rem; color: var(--color-text-secondary); background: var(--color-surface-hover); padding: 0.6rem 0.75rem; border-radius: var(--radius-sm);">
+            <div>📍 <strong>From:</strong> {{ offer.origin_address|truncatechars:35 }}</div>
+            <div>🏁 <strong>To:</strong> {{ offer.destination_address|truncatechars:35 }}</div>
+            <div>🕒 <strong>Departs:</strong> {{ offer.departure_datetime|date:"M d, H:i" }}</div>
+          </div>
+
+          <div class="flex items-center justify-between" style="font-size: 0.8rem; color: var(--color-brand-blue); font-weight: 600;">
+            <span>🪑 {{ offer.available_seats }} of {{ offer.total_seats }} seats available</span>
+            <span>View Details ➔</span>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="card" style="text-align: center; padding: 1.5rem 1rem; border-radius: var(--radius-mobile-card);">
+        <div style="font-size: 2rem; margin-bottom: 0.25rem;">🚗</div>
+        <div style="font-weight: 700; font-size: 0.95rem;">No Active Published Rides</div>
+        <p style="color: var(--color-text-muted); font-size: 0.78rem; margin-bottom: 0.85rem;">Offer a carpool ride route to start earning from empty seats!</p>
+        <a href="{% url 'bookings:offer_ride' %}" class="btn btn-primary btn-sm mobile-touch-active" style="border-radius: var(--radius-full);">
+          Offer Carpool Ride
+        </a>
+      </div>
+    {% endif %}
+
+    <!-- Live Navigation Map Canvas Widget -->
+    <div style="margin-top: 1.25rem; font-weight: 700; font-size: 0.95rem; color: var(--color-text-primary); margin-bottom: 0.75rem;">
+      Live Driver GPS Map
+    </div>
+    <div style="width: 100%; height: 220px; border-radius: var(--radius-mobile-card); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+      <div id="aura-driver-map" style="width: 100%; height: 100%;"></div>
+    </div>
+
+  </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const map = AuraMap.initMap('aura-driver-map', {
-      center: [28.6139, 77.2090],
-      zoom: 13
-    });
-    if (map) {
-      AuraMap.updateDriverMarker('aura-driver-map', [28.6139, 77.2090]);
+    if (window.AuraMap) {
+      const map = AuraMap.initMap('aura-driver-map', {
+        center: [28.6139, 77.2090],
+        zoom: 13
+      });
+      if (map) {
+        AuraMap.updateDriverMarker('aura-driver-map', [28.6139, 77.2090]);
+      }
     }
   });
 </script>

@@ -1,0 +1,299 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Offer a Carpool Ride - {{ PLATFORM_NAME }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .mobile-offer-wrapper {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 64px - 68px);
+    overflow: hidden;
+  }
+  .mobile-fullscreen-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+  }
+  .mobile-sheet-overlay-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 520px;
+    margin: 0 auto;
+    background: var(--color-surface);
+    border-top-left-radius: var(--radius-sheet);
+    border-top-right-radius: var(--radius-sheet);
+    box-shadow: var(--shadow-sheet);
+    z-index: 50;
+    max-height: 78vh;
+    overflow-y: auto;
+    border-top: 1px solid var(--color-border);
+    padding: 1rem 1.25rem 1.5rem;
+  }
+  .autocomplete-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    z-index: 1000;
+    max-height: 180px;
+    overflow-y: auto;
+    display: none;
+  }
+  .autocomplete-item {
+    padding: 0.65rem 0.85rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--color-border-subtle);
+    color: var(--color-text-primary);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mobile-offer-wrapper">
+
+  <!-- Fullscreen Route Map Canvas -->
+  <div class="mobile-fullscreen-map">
+    <div id="aura-offer-map" style="width: 100%; height: 100%;"></div>
+  </div>
+
+  <!-- Mobile Bottom Sheet Offer Ride Form -->
+  <div class="mobile-sheet-overlay-panel">
+    <div class="mobile-sheet-handle"></div>
+
+    <div class="flex items-center justify-between" style="margin-bottom: 1rem;">
+      <div>
+        <span class="badge badge-success" style="font-size: 0.68rem;">👨‍✈️ Driver Portal</span>
+        <h3 style="font-size: 1.15rem; font-weight: 800; margin-top: 0.2rem;">Offer a Carpool Ride</h3>
+      </div>
+      <div id="offer-total-earnings" style="font-size: 1.1rem; font-weight: 800; color: var(--color-success);">₹450 Est</div>
+    </div>
+
+    <form action="{% url 'bookings:offer_ride' %}" method="POST" id="offer-ride-form">
+      {% csrf_token %}
+
+      <input type="hidden" id="origin_lat" name="origin_latitude" value="28.6315">
+      <input type="hidden" id="origin_lon" name="origin_longitude" value="77.2167">
+      <input type="hidden" id="destination_lat" name="destination_latitude" value="28.5562">
+      <input type="hidden" id="destination_lon" name="destination_longitude" value="77.1000">
+
+      <div class="form-group" style="position: relative; margin-bottom: 0.75rem;">
+        <div class="flex items-center justify-between" style="margin-bottom: 0.2rem;">
+          <label class="form-label" style="font-size: 0.78rem; margin-bottom: 0;">Starting Point</label>
+          <button type="button" style="background: none; border: none; color: var(--color-brand-blue); font-size: 0.72rem; font-weight: 700; cursor: pointer;" onclick="useMyLiveLocationForOrigin()">
+            📍 Live Location
+          </button>
+        </div>
+        <input type="text" id="origin_address" name="origin_address" class="form-input" style="padding: 0.6rem 0.85rem; font-size: 0.85rem;" value="Connaught Place, New Delhi" autocomplete="off" required>
+        <div id="origin_suggestions" class="autocomplete-dropdown"></div>
+      </div>
+
+      <div class="form-group" style="position: relative; margin-bottom: 0.85rem;">
+        <label class="form-label" style="font-size: 0.78rem;">Destination</label>
+        <input type="text" id="destination_address" name="destination_address" class="form-input" style="padding: 0.6rem 0.85rem; font-size: 0.85rem;" value="IGI Airport Terminal 3, New Delhi" autocomplete="off" required>
+        <div id="destination_suggestions" class="autocomplete-dropdown"></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3" style="margin-bottom: 0.75rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 0.78rem;">Departure Time</label>
+          <input type="datetime-local" id="departure_time" name="departure_time" class="form-input" style="padding: 0.5rem; font-size: 0.8rem;" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 0.78rem;">Available Seats</label>
+          <select name="total_seats" class="form-input" style="padding: 0.5rem; font-size: 0.8rem;" required>
+            <option value="1">1 Seat</option>
+            <option value="2">2 Seats</option>
+            <option value="3" selected>3 Seats</option>
+            <option value="4">4 Seats</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3" style="margin-bottom: 0.75rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 0.78rem;">Price per Seat (₹)</label>
+          <input type="number" name="price_per_seat" id="price_per_seat" class="form-input" style="padding: 0.5rem; font-size: 0.8rem;" value="150" min="50" max="5000" step="10" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 0.78rem;">Vehicle Category</label>
+          <select name="vehicle_category" class="form-input" style="padding: 0.5rem; font-size: 0.8rem;" required>
+            <option value="SEDAN" selected>Economy Sedan</option>
+            <option value="SUV">Executive SUV</option>
+            <option value="PREMIUM">Luxury</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3" style="margin-bottom: 0.75rem;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 0.78rem;">Car Model</label>
+          <input type="text" name="vehicle_model" class="form-input" style="padding: 0.5rem; font-size: 0.8rem;" value="Honda City" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 0.78rem;">Reg Number</label>
+          <input type="text" name="vehicle_number" class="form-input" style="padding: 0.5rem; font-size: 0.8rem;" value="DL-01-AB-1234" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary mobile-touch-active" style="width: 100%; margin-top: 0.85rem; border-radius: var(--radius-full); padding: 0.85rem; font-size: 0.95rem;">
+        🚀 Publish Carpool Route →
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function useMyLiveLocationForOrigin() {
+    if (window.AuraMap) {
+      AuraMap.fetchUserLiveLocation('aura-offer-map', (data) => {
+        document.getElementById('origin_address').value = data.address;
+        document.getElementById('origin_lat').value = data.lat;
+        document.getElementById('origin_lon').value = data.lon;
+        if (window.updateOfferRoute) window.updateOfferRoute(data.coords, null);
+      });
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+
+    // Set default departure time to 2 hours from now
+    const now = new Date();
+    now.setHours(now.getHours() + 2);
+    const isoStr = now.toISOString().slice(0, 16);
+    const deptInput = document.getElementById('departure_time');
+    if (deptInput) deptInput.value = isoStr;
+
+    // Initialize Map
+    const map = AuraMap.initMap('aura-offer-map', {
+      center: [28.6139, 77.2090],
+      zoom: 12
+    });
+
+    let originCoords = [28.6315, 77.2167];
+    let destCoords = [28.5562, 77.1000];
+
+    async function updateOfferRoute() {
+      if (window.AuraMap) {
+        const routeData = await AuraMap.renderRoadRoute('aura-offer-map', originCoords, destCoords);
+        if (routeData) {
+          const metricsEl = document.getElementById('offer-route-metrics');
+          if (metricsEl) {
+            metricsEl.innerText = `${routeData.distanceKm} km • ~${routeData.durationMins} mins driving time`;
+          }
+          const priceInput = document.getElementById('price_per_seat');
+          const seatsSelect = document.querySelector('[name="total_seats"]');
+          if (priceInput && seatsSelect) {
+            const seats = parseInt(seatsSelect.value || '3');
+            const total = parseInt(priceInput.value || '150') * seats;
+            const earningsEl = document.getElementById('offer-total-earnings');
+            if (earningsEl) earningsEl.innerText = `₹${total} Potential`;
+          }
+        }
+      }
+    }
+
+    if (map) {
+      updateOfferRoute();
+
+      // Click on map to set origin or destination
+      let clickToggle = false;
+      map.on('click', async (e) => {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        if (!clickToggle) {
+          originCoords = [lat, lon];
+          document.getElementById('origin_lat').value = lat;
+          document.getElementById('origin_lon').value = lon;
+          clickToggle = true;
+          AuraApp.showToast("Origin pin placed on map", "info");
+        } else {
+          destCoords = [lat, lon];
+          document.getElementById('destination_lat').value = lat;
+          document.getElementById('destination_lon').value = lon;
+          clickToggle = false;
+          AuraApp.showToast("Destination pin placed on map", "info");
+        }
+        updateOfferRoute();
+      });
+    }
+
+    // Setup Nominatim Autocomplete
+    function setupAddressAutocomplete(inputId, dropdownId, isOrigin) {
+      const input = document.getElementById(inputId);
+      const dropdown = document.getElementById(dropdownId);
+      let debounceTimer = null;
+
+      if (!input || !dropdown) return;
+
+      input.addEventListener('input', (e) => {
+        const query = e.target.value;
+        clearTimeout(debounceTimer);
+        if (query.trim().length < 3) {
+          dropdown.style.display = 'none';
+          return;
+        }
+
+        debounceTimer = setTimeout(async () => {
+          const results = await AuraMap.searchAddress(query);
+          if (results.length === 0) {
+            dropdown.style.display = 'none';
+            return;
+          }
+
+          dropdown.innerHTML = results.map(item => `
+            <div class="autocomplete-item" data-lat="${item.lat}" data-lon="${item.lon}">
+              📍 ${item.displayName}
+            </div>
+          `).join('');
+          dropdown.style.display = 'block';
+
+          dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', () => {
+              const lat = parseFloat(item.getAttribute('data-lat'));
+              const lon = parseFloat(item.getAttribute('data-lon'));
+              input.value = item.innerText.replace('📍 ', '').trim();
+              dropdown.style.display = 'none';
+
+              if (isOrigin) {
+                originCoords = [lat, lon];
+                document.getElementById('origin_lat').value = lat;
+                document.getElementById('origin_lon').value = lon;
+              } else {
+                destCoords = [lat, lon];
+                document.getElementById('destination_lat').value = lat;
+                document.getElementById('destination_lon').value = lon;
+              }
+              updateOfferRoute();
+            });
+          });
+        }, 300);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.style.display = 'none';
+        }
+      });
+    }
+
+    setupAddressAutocomplete('origin_address', 'origin_suggestions', true);
+    setupAddressAutocomplete('destination_address', 'destination_suggestions', false);
+  });
+</script>
+{% endblock %}

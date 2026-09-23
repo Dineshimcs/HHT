@@ -19,16 +19,17 @@ const AuraMap = {
         zoomControl: false
       }).setView(options.center || defaultCenter, zoom);
 
-      // Add dark / light tile layer (OpenStreetMap / CARTO - Free, No API Key)
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const tileUrl = isDark
-        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+      // Use 100% free Esri World Street Map tiles (No API Key Required, No 403 Access Blocked)
+      const tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
 
-      L.tileLayer(tileUrl, {
+      const tileLayer = L.tileLayer(tileUrl, {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>'
-      }).addTo(map);
+        attribution: '&copy; <a href="https://www.esri.com/">Esri</a> &copy; OpenStreetMap contributors'
+      });
+
+      tileLayer.addTo(map);
+
+
 
       // Add Zoom Control to Top Right
       L.control.zoom({ position: 'topright' }).addTo(map);
@@ -48,9 +49,88 @@ const AuraMap = {
   },
 
   /**
+   * Reverse Geocoding via OpenStreetMap Nominatim
+   */
+  async reverseGeocode(lat, lon) {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`);
+      if (!response.ok) return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+      const data = await response.json();
+      return data.display_name || `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+    } catch (err) {
+      console.warn("Reverse Geocoding Error:", err);
+      return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+    }
+  },
+
+  /**
+   * Fetch Live Browser Geolocation, center map, and return address
+   */
+  fetchUserLiveLocation(containerId, callback) {
+    if (window.AuraApp) AuraApp.showToast("Fetching your live GPS location...", "info");
+
+    const onLocationSuccess = async (lat, lon) => {
+      const coords = [lat, lon];
+      const instance = this.instances[containerId];
+      if (instance && instance.map) {
+        instance.map.flyTo(coords, 14);
+        
+        if (!instance.markers.userGps) {
+          const userIcon = L.divIcon({
+            className: 'aura-user-gps-pin',
+            html: `<div style="background:#10B981; width:22px; height:22px; border-radius:50%; border:3px solid #FFF; box-shadow:0 0 16px rgba(16,185,129,0.8);"></div>`,
+            iconSize: [22, 22]
+          });
+          instance.markers.userGps = L.marker(coords, { icon: userIcon }).addTo(instance.map);
+        } else {
+          instance.markers.userGps.setLatLng(coords);
+        }
+      }
+
+      const address = await this.reverseGeocode(lat, lon);
+      if (window.AuraApp) AuraApp.showToast("Live location retrieved!", "success");
+
+      if (callback) {
+        callback({ lat, lon, coords, address });
+      }
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => onLocationSuccess(pos.coords.latitude, pos.coords.longitude),
+        (err) => {
+          console.warn("GPS High Accuracy timeout/error, trying low accuracy...", err);
+          navigator.geolocation.getCurrentPosition(
+            (pos) => onLocationSuccess(pos.coords.latitude, pos.coords.longitude),
+            async () => {
+              try {
+                const res = await fetch('https://ipapi.co/json/');
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data.latitude && data.longitude) {
+                    onLocationSuccess(data.latitude, data.longitude);
+                    return;
+                  }
+                }
+              } catch (e) {}
+              if (window.AuraApp) AuraApp.showToast("Could not access GPS. Please click on map or type address.", "warning");
+            },
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 }
+          );
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      if (window.AuraApp) AuraApp.showToast("Geolocation is not supported by your browser.", "warning");
+    }
+  },
+
+
+  /**
    * Free Geocoding via OpenStreetMap Nominatim
    */
   async searchAddress(query) {
+
     if (!query || query.trim().length < 3) return [];
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`);

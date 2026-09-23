@@ -34,7 +34,88 @@ def create_booking_view(request):
         )
         return redirect('bookings:detail', booking_id=booking.id)
 
-    return render(request, 'customer/booking_create.html')
+    from .models import RideOffer, RideOfferStatus
+    open_offers = RideOffer.objects.filter(status=RideOfferStatus.OPEN, available_seats__gt=0).order_by('-departure_datetime')[:10]
+    return render(request, 'customer/booking_create.html', {'open_offers': open_offers})
+
+@login_required
+def offer_ride_view(request):
+    if request.method == 'POST':
+        from django.utils import timezone
+        import datetime
+        origin_addr = request.POST.get('origin_address', 'Connaught Place, New Delhi')
+        origin_lat = float(request.POST.get('origin_latitude', 28.6315))
+        origin_lon = float(request.POST.get('origin_longitude', 77.2167))
+        
+        destination_addr = request.POST.get('destination_address', 'IGI Airport Terminal 3, New Delhi')
+        destination_lat = float(request.POST.get('destination_latitude', 28.5562))
+        destination_lon = float(request.POST.get('destination_longitude', 77.1000))
+        
+        total_seats = int(request.POST.get('total_seats', 3))
+        price_per_seat = float(request.POST.get('price_per_seat', 150.00))
+        vehicle_model = request.POST.get('vehicle_model', 'Honda City')
+        vehicle_number = request.POST.get('vehicle_number', 'DL-01-AB-1234')
+        vehicle_category = request.POST.get('vehicle_category', 'SEDAN')
+        description = request.POST.get('description', 'Comfortable ride')
+        
+        dept_time_str = request.POST.get('departure_time')
+        if dept_time_str:
+            try:
+                departure_dt = timezone.datetime.fromisoformat(dept_time_str)
+            except Exception:
+                departure_dt = timezone.now() + datetime.timedelta(hours=2)
+        else:
+            departure_dt = timezone.now() + datetime.timedelta(hours=2)
+
+        offer = BookingService.publish_ride_offer(
+            driver=request.user,
+            origin_addr=origin_addr,
+            origin_lat=origin_lat,
+            origin_lon=origin_lon,
+            drop_addr=destination_addr,
+            drop_lat=destination_lat,
+            drop_lon=destination_lon,
+            departure_datetime=departure_dt,
+            total_seats=total_seats,
+            price_per_seat=price_per_seat,
+            vehicle_model=vehicle_model,
+            vehicle_number=vehicle_number,
+            vehicle_category=vehicle_category,
+            description=description
+        )
+        from django.contrib import messages
+        messages.success(request, "Your carpool ride offer has been published successfully!")
+        return redirect('drivers:dashboard')
+
+    return render(request, 'driver/offer_ride.html')
+
+@login_required
+@require_POST
+def book_carpool_seat_view(request, offer_id):
+    try:
+        seats_booked = int(request.POST.get('seats_booked', 1))
+        booking = BookingService.book_seat_in_offer(offer_id, request.user, seats_booked)
+        from django.contrib import messages
+        messages.success(request, f"Seat booked! You reserved {seats_booked} seat(s).")
+        return redirect('bookings:detail', booking_id=booking.id)
+    except Exception as e:
+        from django.contrib import messages
+        messages.error(request, f"Could not book seat: {str(e)}")
+        return redirect('bookings:create')
+
+@login_required
+@require_POST
+def cancel_booking_view(request, booking_id):
+    try:
+        reason = request.POST.get('reason', 'User cancelled from live tracking')
+        BookingService.cancel_booking(booking_id, request.user, reason)
+        from django.contrib import messages
+        messages.info(request, "Trip cancelled successfully.")
+        return redirect('customers:dashboard')
+    except Exception as e:
+        from django.contrib import messages
+        messages.error(request, str(e))
+        return redirect('bookings:detail', booking_id=booking_id)
 
 @login_required
 def booking_detail_view(request, booking_id):
@@ -52,3 +133,4 @@ def api_fare_estimate(request):
         return json_response_success({'estimated_fare': float(fare)}, "Fare estimated")
     except Exception as e:
         return json_response_error(str(e))
+

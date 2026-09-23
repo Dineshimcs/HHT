@@ -3,61 +3,93 @@
 {% block title %}Live Trip Status - {{ PLATFORM_NAME }}{% endblock %}
 
 {% block content %}
-<div class="aura-view-section" id="view-live-trip">
-  <div style="position: relative; width: 100%; height: calc(100vh - var(--header-height)); overflow: hidden;">
-    
-    <!-- Fullscreen Map Container -->
+{% extends 'base/base.html' %}
+
+{% block title %}Live Trip - {{ PLATFORM_NAME }}{% endblock %}
+
+{% block content %}
+<div class="mobile-booking-wrapper" style="height: calc(100vh - 64px - 68px);">
+  
+  <!-- Fullscreen Map Container -->
+  <div class="mobile-fullscreen-map">
     <div id="aura-live-trip-map" style="width: 100%; height: 100%;"></div>
+  </div>
 
-    <!-- Floating Live Trip Bottom Sheet Overlay -->
-    <div class="live-trip-sheet">
-      <div class="flex items-center justify-between" style="margin-bottom: 1.25rem;">
-        <div>
-          <span class="badge badge-warning" id="trip-status-badge">Searching Driver</span>
-          <h3 style="font-size: 1.25rem; margin-top: 0.35rem;" id="trip-status-desc">Finding the best nearby driver for your ride...</h3>
+  <!-- Floating Mobile Live Trip Bottom Sheet Overlay -->
+  <div class="mobile-bottom-sheet open" style="z-index: 500;">
+    <div class="mobile-sheet-handle"></div>
+
+    <div class="flex items-center justify-between" style="margin-bottom: 0.85rem;">
+      <div>
+        <span class="badge {% if 'CANCELLED' in booking.status %}badge-danger{% elif booking.status == 'TRIP_COMPLETED' %}badge-success{% else %}badge-info{% endif %}" id="trip-status-badge">
+          {{ booking.get_status_display }}
+        </span>
+        <h3 style="font-size: 1.05rem; margin-top: 0.25rem;" id="trip-status-desc">
+          {% if booking.ride_offer %}
+            Carpool Reserved • Ref {{ booking.booking_reference }}
+          {% else %}
+            Taxi Ride • Ref {{ booking.booking_reference }}
+          {% endif %}
+        </h3>
+      </div>
+      
+      <!-- Live Ride Safety OTP Pill -->
+      <div style="background: var(--color-brand-blue-subtle); border: 1px dashed var(--color-brand-blue); padding: 0.35rem 0.75rem; border-radius: var(--radius-full); text-align: center;">
+        <div style="font-size: 0.68rem; color: var(--color-brand-blue); font-weight: 700; text-transform: uppercase;">START OTP</div>
+        <div style="font-size: 1.1rem; font-weight: 800; color: var(--color-brand-blue); letter-spacing: 0.1em;">8492</div>
+      </div>
+    </div>
+
+    <!-- Driver & Vehicle Details Mobile Card -->
+    <div class="mobile-card-tile" style="margin-bottom: 0.85rem; padding: 0.85rem;">
+      <div class="mobile-card-icon" style="background: var(--color-brand-blue); color: white;">
+        👨‍✈️
+      </div>
+      <div style="flex: 1;">
+        <div style="font-weight: 700; font-size: 0.95rem;">
+          {% if booking.driver %}
+            {{ booking.driver.user.get_full_name|default:booking.driver.user.username }}
+          {% elif booking.ride_offer %}
+            {{ booking.ride_offer.driver.get_full_name|default:booking.ride_offer.driver.username }}
+          {% else %}
+            Rajesh Kumar (Verified)
+          {% endif %}
         </div>
-        <div class="trip-eta-badge" id="trip-eta-clock">
-          ETA 4 mins
+        <div style="font-size: 0.75rem; color: var(--color-text-muted);">
+          ★ 4.9 • 
+          {% if booking.ride_offer %}
+            {{ booking.ride_offer.vehicle_model }}
+          {% else %}
+            Honda City (DL-01-AB-1234)
+          {% endif %}
         </div>
       </div>
 
-      <!-- Driver Details Card -->
-      <div class="card flex items-center justify-between" style="padding: 1rem 1.25rem; background: var(--color-surface-hover); margin-bottom: 1.25rem;">
-        <div class="flex items-center gap-4">
-          <div class="driver-info-avatar">RK</div>
-          <div>
-            <div style="font-weight: bold; font-size: 1.05rem;">Rajesh Kumar</div>
-            <div style="font-size: 0.85rem; color: var(--color-text-muted);">★ 4.9 (1,240 Trips) • White Honda City</div>
-            <div style="font-size: 0.85rem; font-weight: 600; color: var(--color-brand-blue);">Reg: DL-01-AB-1234</div>
-          </div>
-        </div>
+      <a href="tel:+919876543210" class="btn btn-primary btn-sm mobile-touch-active" style="border-radius: var(--radius-full); padding: 0.5rem 0.85rem;" title="Call Driver">
+        📞 Call
+      </a>
+    </div>
 
-        <div class="flex gap-2">
-          <a href="tel:+919876543210" class="btn btn-secondary btn-sm" title="Call Driver">📞 Call</a>
-        </div>
-      </div>
+    <!-- Route Address Summary -->
+    <div style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.25rem; background: var(--color-surface-hover); padding: 0.75rem; border-radius: var(--radius-md);">
+      <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📍 <strong>Pickup:</strong> {{ booking.pickup_address }}</div>
+      <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏁 <strong>Drop:</strong> {{ booking.destination_address }}</div>
+    </div>
 
-      <!-- Route Address Summary -->
-      <div style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-        <div class="flex items-center gap-2">
-          <span style="color: var(--color-brand-blue); font-weight: bold;">●</span>
-          <span>Pickup: Connaught Place, Inner Circle, New Delhi</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span style="color: var(--color-accent); font-weight: bold;">●</span>
-          <span>Destination: IGI Airport Terminal 3, New Delhi</span>
-        </div>
-      </div>
+    <!-- Mobile Action Buttons -->
+    <div class="flex gap-2">
+      {% if not 'CANCELLED' in booking.status and booking.status != 'TRIP_COMPLETED' %}
+        <form action="{% url 'bookings:cancel' booking.id %}" method="POST" style="flex: 1;">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm mobile-touch-active" style="width: 100%; border-radius: var(--radius-full);" onclick="return confirm('Cancel this booking?');">
+            Cancel Ride
+          </button>
+        </form>
+      {% endif %}
 
-      <!-- Action Buttons -->
-      <div class="flex gap-3">
-        <button class="btn btn-danger" style="flex: 1;" onclick="if(confirm('Are you sure you want to cancel this trip?')) { AuraApp.showToast('Trip cancelled', 'danger'); AuraApp.switchView('booking'); }">
-          Cancel Trip
-        </button>
-        <button class="btn btn-secondary" style="flex: 1;" onclick="document.getElementById('sos-modal').classList.add('active');">
-          🚨 Emergency SOS
-        </button>
-      </div>
+      <button class="btn btn-secondary btn-sm mobile-touch-active" style="flex: 1; border-radius: var(--radius-full);" onclick="document.getElementById('sos-modal').classList.add('active');">
+        🚨 Emergency SOS
+      </button>
     </div>
   </div>
 </div>
@@ -66,7 +98,7 @@
 <div class="modal-overlay" id="sos-modal">
   <div class="modal-container">
     <h3 style="color: var(--color-danger); margin-bottom: 0.5rem;">🚨 Emergency Safety SOS</h3>
-    <p style="margin-bottom: 1.5rem;">If you feel unsafe or require immediate assistance, our 24/7 security team and local emergency response will be notified with your live GPS location.</p>
+    <p style="margin-bottom: 1.5rem;">If you feel unsafe or require immediate assistance, our 24/7 security desk and emergency response will be notified with your live GPS location.</p>
     
     <div class="flex flex-col gap-3">
       <button class="btn btn-danger btn-lg" onclick="alert('Emergency Alert Sent! Support team is contacting you and local authorities.'); document.getElementById('sos-modal').classList.remove('active');">
@@ -82,15 +114,36 @@
 
 {% block extra_js %}
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    const pickupCoords = [{{ booking.pickup_latitude }}, {{ booking.pickup_longitude }}];
+    const dropCoords = [{{ booking.destination_latitude }}, {{ booking.destination_longitude }}];
+
     const map = AuraMap.initMap('aura-live-trip-map', {
-      center: [28.6139, 77.2090],
+      center: pickupCoords,
       zoom: 13
     });
 
-    if (map) {
-      AuraMap.setMarkers('aura-live-trip-map', [28.6315, 77.2167], [28.5562, 77.1000]);
-      AuraMap.updateDriverMarker('aura-live-trip-map', [28.6280, 77.2120]);
+    if (map && window.AuraMap) {
+      const routeData = await AuraMap.renderRoadRoute('aura-live-trip-map', pickupCoords, dropCoords);
+      
+      // Animate driver moving along OSRM route points
+      if (routeData && routeData.latLngs && routeData.latLngs.length > 0) {
+        const routePoints = routeData.latLngs;
+        let pointIndex = 0;
+        
+        AuraMap.updateDriverMarker('aura-live-trip-map', routePoints[0]);
+
+        const animateInterval = setInterval(() => {
+          pointIndex++;
+          if (pointIndex < routePoints.length) {
+            AuraMap.updateDriverMarker('aura-live-trip-map', routePoints[pointIndex]);
+          } else {
+            clearInterval(animateInterval);
+          }
+        }, 800);
+      } else {
+        AuraMap.updateDriverMarker('aura-live-trip-map', [pickupCoords[0] + 0.002, pickupCoords[1] + 0.002]);
+      }
     }
   });
 </script>

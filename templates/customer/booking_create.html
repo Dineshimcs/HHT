@@ -4,6 +4,37 @@
 
 {% block extra_head %}
 <style>
+  .mobile-booking-wrapper {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 64px - 68px);
+    overflow: hidden;
+  }
+  .mobile-fullscreen-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+  }
+  .mobile-sheet-overlay-panel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 520px;
+    margin: 0 auto;
+    background: var(--color-surface);
+    border-top-left-radius: var(--radius-sheet);
+    border-top-right-radius: var(--radius-sheet);
+    box-shadow: var(--shadow-sheet);
+    z-index: 50;
+    max-height: 75vh;
+    overflow-y: auto;
+    border-top: 1px solid var(--color-border);
+    padding: 1rem 1.25rem 1.5rem;
+  }
   .autocomplete-dropdown {
     position: absolute;
     top: 100%;
@@ -14,111 +45,184 @@
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-md);
     z-index: 1000;
-    max-height: 200px;
+    max-height: 180px;
     overflow-y: auto;
     display: none;
   }
   .autocomplete-item {
-    padding: 0.6rem 0.85rem;
+    padding: 0.65rem 0.85rem;
     cursor: pointer;
     font-size: 0.85rem;
     border-bottom: 1px solid var(--color-border-subtle);
     color: var(--color-text-primary);
   }
-  .autocomplete-item:hover {
-    background: var(--color-surface-hover);
-    color: var(--color-brand-blue);
+  .carpool-offer-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-mobile-card);
+    padding: 1rem;
+    margin-bottom: 0.85rem;
+    background: var(--color-surface);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .carpool-offer-card.active {
+    border-color: var(--color-brand-blue);
+    box-shadow: var(--shadow-md);
+    background: var(--color-brand-blue-subtle);
+  }
+  .vehicle-tier-row {
+    display: flex;
+    gap: 0.65rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+  .vehicle-tier-card-mobile {
+    flex: 0 0 140px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.85rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .vehicle-tier-card-mobile.selected {
+    border-color: var(--color-brand-blue);
+    background: var(--color-brand-blue-subtle);
+    box-shadow: var(--shadow-sm);
   }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="aura-view-section" id="view-booking">
-  <div class="booking-container">
-    
-    <!-- Left Panel: Booking Options Wizard -->
-    <div class="booking-panel">
-      <h2 style="font-size: 1.5rem; margin-bottom: 0.25rem;">Where to?</h2>
-      <p style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 1.5rem;">Select your route and preferred vehicle category.</p>
+<div class="mobile-booking-wrapper">
+  
+  <!-- Fullscreen Interactive Leaflet Map Layer -->
+  <div class="mobile-fullscreen-map">
+    <div id="aura-booking-map" style="width: 100%; height: 100%;"></div>
+  </div>
 
+  <!-- Mobile Bottom Sheet Control Panel -->
+  <div class="mobile-sheet-overlay-panel">
+    <div class="mobile-sheet-handle"></div>
+
+    <!-- Segmented Tab Bar (Carpool vs Instant Taxi) -->
+    <div class="mobile-segmented-control" style="margin-bottom: 1rem;">
+      <button type="button" id="tab-btn-carpool" class="mobile-segment-tab active" onclick="switchBookingTab('CARPOOL')">🚗 Carpool Rides</button>
+      <button type="button" id="tab-btn-taxi" class="mobile-segment-tab" onclick="switchBookingTab('TAXI')">🚕 Instant Taxi</button>
+    </div>
+
+    <!-- MODE 1: CARPOOL PUBLISHED RIDES -->
+    <div id="section-carpool-mode">
+      {% if open_offers %}
+        <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+          {% for offer in open_offers %}
+            <div class="carpool-offer-card {% if forloop.first %}active{% endif %}" 
+                 onclick="selectCarpoolOffer('{{ offer.id }}', '{{ offer.origin_address|escapejs }}', {{ offer.origin_latitude }}, {{ offer.origin_longitude }}, '{{ offer.destination_address|escapejs }}', {{ offer.destination_latitude }}, {{ offer.destination_longitude }}, '{{ offer.price_per_seat }}', '{{ offer.available_seats }}', '{{ offer.driver.get_full_name|default:offer.driver.username|escapejs }}', '{{ offer.vehicle_model|escapejs }}')">
+              <div class="flex items-center justify-between" style="margin-bottom: 0.35rem;">
+                <div class="flex items-center gap-2">
+                  <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--color-brand-blue); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">👨‍✈️</div>
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.9rem;">{{ offer.driver.get_full_name|default:offer.driver.username }}</div>
+                    <div style="font-size: 0.72rem; color: var(--color-text-muted);">★ 4.9 • {{ offer.vehicle_model }}</div>
+                  </div>
+                </div>
+                <div style="text-align: right;">
+                  <div style="font-size: 1.15rem; font-weight: 800; color: var(--color-success);">₹{{ offer.price_per_seat }}</div>
+                  <div style="font-size: 0.7rem; color: var(--color-text-muted);">per seat</div>
+                </div>
+              </div>
+
+              <div style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 0.5rem;">
+                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📍 <strong>From:</strong> {{ offer.origin_address }}</div>
+                <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏁 <strong>To:</strong> {{ offer.destination_address }}</div>
+              </div>
+
+              <form action="{% url 'bookings:book_seat' offer.id %}" method="POST">
+                {% csrf_token %}
+                <div class="flex items-center gap-2">
+                  <select name="seats_booked" class="form-input" style="padding: 0.35rem; font-size: 0.8rem; width: auto;" onclick="event.stopPropagation();">
+                    {% for i in "1234"|make_list %}
+                      {% if forloop.counter <= offer.available_seats %}
+                        <option value="{{ forloop.counter }}">{{ forloop.counter }} seat{% if forloop.counter > 1 %}s{% endif %}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                  <button type="submit" class="btn btn-primary btn-sm mobile-touch-active" style="flex: 1; border-radius: var(--radius-full);" onclick="event.stopPropagation();">
+                    Book Seat →
+                  </button>
+                </div>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="text-align: center; padding: 1.5rem 0;">
+          <div style="font-size: 2rem; margin-bottom: 0.25rem;">🚘</div>
+          <div style="font-weight: 700; font-size: 0.95rem;">No Published Carpool Rides</div>
+          <p style="color: var(--color-text-muted); font-size: 0.8rem; margin-bottom: 0.75rem;">Request an instant taxi using the toggle above!</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- MODE 2: INSTANT TAXI BOOKING -->
+    <div id="section-taxi-mode" style="display: none;">
       <form action="{% url 'bookings:create' %}" method="POST" id="booking-form">
         {% csrf_token %}
-        
-        <!-- Booking Type Switcher -->
-        <div class="flex gap-2" style="margin-bottom: 1.5rem; background: var(--color-surface-hover); padding: 0.35rem; border-radius: var(--radius-md);">
-          <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; border: none; background: var(--color-surface);" onclick="document.getElementById('booking_type').value='TAXI';">🚕 Taxi Ride</button>
-          <button type="button" class="btn btn-secondary btn-sm" style="flex: 1; border: none;" onclick="document.getElementById('booking_type').value='DRIVER_ONLY'; AuraBooking.selectVehicle('DRIVER_ONLY');">👨‍✈️ Hire Driver Only</button>
-        </div>
         <input type="hidden" name="booking_type" id="booking_type" value="TAXI">
+        <input type="hidden" name="pickup_latitude" id="pickup_latitude" value="28.6315">
+        <input type="hidden" name="pickup_longitude" id="pickup_longitude" value="77.2167">
+        <input type="hidden" name="destination_latitude" id="destination_latitude" value="28.5562">
+        <input type="hidden" name="destination_longitude" id="destination_longitude" value="77.1000">
 
-        <div class="form-group" style="position: relative;">
-          <label class="form-label">Pickup Location</label>
-          <input type="text" id="pickup_address" name="pickup_address" class="form-input" value="Connaught Place, Inner Circle, New Delhi" autocomplete="off" required>
+        <div class="form-group" style="position: relative; margin-bottom: 0.75rem;">
+          <div class="flex items-center justify-between" style="margin-bottom: 0.2rem;">
+            <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0;">Pickup Location</label>
+            <button type="button" style="background: none; border: none; color: var(--color-brand-blue); font-size: 0.75rem; font-weight: 700; cursor: pointer;" onclick="useMyLiveLocationForPickup()">
+              📍 Live Location
+            </button>
+          </div>
+          <input type="text" id="pickup_address" name="pickup_address" class="form-input" style="padding: 0.6rem 0.85rem; font-size: 0.88rem;" value="Connaught Place, New Delhi" autocomplete="off" required>
           <div id="pickup_suggestions" class="autocomplete-dropdown"></div>
         </div>
 
-        <div class="form-group" style="position: relative;">
-          <label class="form-label">Destination</label>
-          <input type="text" id="destination_address" name="destination_address" class="form-input" value="IGI Airport Terminal 3, New Delhi" autocomplete="off" required>
+        <div class="form-group" style="position: relative; margin-bottom: 0.85rem;">
+          <label class="form-label" style="font-size: 0.8rem;">Destination</label>
+          <input type="text" id="destination_address" name="destination_address" class="form-input" style="padding: 0.6rem 0.85rem; font-size: 0.88rem;" value="IGI Airport Terminal 3, New Delhi" autocomplete="off" required>
           <div id="destination_suggestions" class="autocomplete-dropdown"></div>
         </div>
 
-        <!-- Vehicle Category Selector -->
-        <h4 style="font-size: 1rem; margin: 1.5rem 0 0.75rem;">Vehicle Category</h4>
+        <div style="font-size: 0.82rem; font-weight: 700; margin-bottom: 0.5rem;">Select Vehicle Class</div>
         <input type="hidden" name="vehicle_category" id="selected_category_input" value="SEDAN">
 
-        <div class="vehicle-tier-card selected" data-category="SEDAN">
-          <div>
-            <div style="font-weight: bold; font-size: 1rem;">Economy Sedan</div>
-            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Honda City or similar • 4 Seats</div>
+        <!-- Horizontal Swipeable Vehicle Cards -->
+        <div class="vehicle-tier-row">
+          <div class="vehicle-tier-card-mobile selected" data-category="SEDAN" onclick="selectMobileVehicleCategory('SEDAN', 237, this)">
+            <div style="font-size: 1.4rem;">🚘</div>
+            <div style="font-weight: 700; font-size: 0.85rem;">Sedan</div>
+            <div style="font-size: 0.7rem; color: var(--color-text-muted);">4 Seats</div>
+            <div style="font-weight: 800; font-size: 0.95rem; color: var(--color-brand-blue); margin-top: 2px;">₹237</div>
           </div>
-          <div class="vehicle-price">₹237</div>
-        </div>
 
-        <div class="vehicle-tier-card" data-category="SUV">
-          <div>
-            <div style="font-weight: bold; font-size: 1rem;">Executive SUV</div>
-            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Toyota Innova or similar • 6 Seats</div>
+          <div class="vehicle-tier-card-mobile" data-category="SUV" onclick="selectMobileVehicleCategory('SUV', 368, this)">
+            <div style="font-size: 1.4rem;">🚙</div>
+            <div style="font-weight: 700; font-size: 0.85rem;">SUV</div>
+            <div style="font-size: 0.7rem; color: var(--color-text-muted);">6 Seats</div>
+            <div style="font-weight: 800; font-size: 0.95rem; color: var(--color-brand-blue); margin-top: 2px;">₹368</div>
           </div>
-          <div class="vehicle-price">₹368</div>
-        </div>
 
-        <div class="vehicle-tier-card" data-category="PREMIUM">
-          <div>
-            <div style="font-weight: bold; font-size: 1rem;">Luxury Executive</div>
-            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Mercedes E-Class or similar • 4 Seats</div>
-          </div>
-          <div class="vehicle-price">₹586</div>
-        </div>
-
-        <div class="vehicle-tier-card" data-category="DRIVER_ONLY">
-          <div>
-            <div style="font-weight: bold; font-size: 1rem;">Professional Driver Rental</div>
-            <div style="font-size: 0.8rem; color: var(--color-text-muted);">Chauffeur for your personal vehicle</div>
-          </div>
-          <div class="vehicle-price">₹350</div>
-        </div>
-
-        <!-- Total Fare Card -->
-        <div class="card" style="margin-top: 1.5rem; background: var(--color-brand-blue-subtle); border-color: rgba(37,99,235,0.2);">
-          <div class="flex items-center justify-between">
-            <div>
-              <div style="font-size: 0.8rem; color: var(--color-brand-blue); font-weight: bold;">ESTIMATED FARE</div>
-              <div style="font-size: 0.85rem; color: var(--color-text-secondary);">Includes taxes & road routing</div>
-            </div>
-            <div id="aura-estimated-fare-display" style="font-size: 1.75rem; font-weight: 800; color: var(--color-brand-blue);">₹237</div>
+          <div class="vehicle-tier-card-mobile" data-category="PREMIUM" onclick="selectMobileVehicleCategory('PREMIUM', 586, this)">
+            <div style="font-size: 1.4rem;">⭐</div>
+            <div style="font-weight: 700; font-size: 0.85rem;">Luxury</div>
+            <div style="font-size: 0.7rem; color: var(--color-text-muted);">4 Seats</div>
+            <div style="font-weight: 800; font-size: 0.95rem; color: var(--color-brand-blue); margin-top: 2px;">₹586</div>
           </div>
         </div>
 
-        <button type="button" id="btn-confirm-booking" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 1.5rem;">
-          Confirm & Search Driver →
+        <button type="submit" id="btn-confirm-booking" class="btn btn-primary mobile-touch-active" style="width: 100%; margin-top: 1rem; border-radius: var(--radius-full); padding: 0.85rem; font-size: 0.95rem;">
+          Confirm Ride (₹237) →
         </button>
       </form>
-    </div>
-
-    <!-- Right Panel: Interactive Route Map -->
-    <div class="map-view-container">
-      <div id="aura-booking-map" style="width: 100%; height: 100%;"></div>
     </div>
   </div>
 </div>
@@ -126,19 +230,88 @@
 
 {% block extra_js %}
 <script>
+  function selectMobileVehicleCategory(category, price, el) {
+    document.querySelectorAll('.vehicle-tier-card-mobile').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('selected_category_input').value = category;
+    const confirmBtn = document.getElementById('btn-confirm-booking');
+    if (confirmBtn) {
+      confirmBtn.innerText = `Confirm Ride (₹${price}) →`;
+    }
+  }
+
+  function useMyLiveLocationForPickup() {
+    if (window.AuraMap) {
+      AuraMap.fetchUserLiveLocation('aura-booking-map', (data) => {
+        document.getElementById('pickup_address').value = data.address;
+        document.getElementById('pickup_latitude').value = data.lat;
+        document.getElementById('pickup_longitude').value = data.lon;
+        AuraBooking.updateRoute(data.coords, null);
+      });
+    }
+  }
+
+  function switchBookingTab(mode) {
+    const carpoolSec = document.getElementById('section-carpool-mode');
+    const taxiSec = document.getElementById('section-taxi-mode');
+    const carpoolBtn = document.getElementById('tab-btn-carpool');
+    const taxiBtn = document.getElementById('tab-btn-taxi');
+
+    if (mode === 'CARPOOL') {
+      carpoolSec.style.display = 'block';
+      taxiSec.style.display = 'none';
+      carpoolBtn.className = 'mobile-segment-tab active';
+      taxiBtn.className = 'mobile-segment-tab';
+    } else {
+      carpoolSec.style.display = 'none';
+      taxiSec.style.display = 'block';
+      carpoolBtn.className = 'mobile-segment-tab';
+      taxiBtn.className = 'mobile-segment-tab active';
+    }
+  }
+  }
+
+  function selectCarpoolOffer(id, origAddr, origLat, origLon, destAddr, destLat, destLon, price, seats, driverName, carModel) {
+    document.querySelectorAll('.carpool-offer-card').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    if (window.AuraMap) {
+      AuraMap.renderRoadRoute('aura-booking-map', [origLat, origLon], [destLat, destLon]);
+      AuraMap.updateDriverMarker('aura-booking-map', [origLat + 0.003, origLon + 0.003]);
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
-    // Initialize Leaflet Map with OpenStreetMap / CARTO (Free, No Key)
+    // Initialize Leaflet Map
     const map = AuraMap.initMap('aura-booking-map', {
       center: [28.6139, 77.2090],
       zoom: 12
     });
 
     if (map) {
-      // Default Initial Pickup & Drop
       const defaultPickup = [28.6315, 77.2167];
       const defaultDrop = [28.5562, 77.1000];
       AuraBooking.updateRoute(defaultPickup, defaultDrop);
-      AuraMap.updateDriverMarker('aura-booking-map', [28.6250, 77.2100]);
+
+      // Map click selection for Instant Taxi Mode
+      let clickToggle = false;
+      map.on('click', (e) => {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        if (!clickToggle) {
+          document.getElementById('pickup_latitude').value = lat;
+          document.getElementById('pickup_longitude').value = lon;
+          AuraBooking.updateRoute([lat, lon], null);
+          clickToggle = true;
+          AuraApp.showToast("Pickup location updated on map", "info");
+        } else {
+          document.getElementById('destination_latitude').value = lat;
+          document.getElementById('destination_longitude').value = lon;
+          AuraBooking.updateRoute(null, [lat, lon]);
+          clickToggle = false;
+          AuraApp.showToast("Destination location updated on map", "info");
+        }
+      });
     }
 
     // Helper for setup address input autocompletion with OpenStreetMap Nominatim
@@ -180,8 +353,12 @@
 
               const coords = [lat, lon];
               if (isPickup) {
+                document.getElementById('pickup_latitude').value = lat;
+                document.getElementById('pickup_longitude').value = lon;
                 AuraBooking.updateRoute(coords, null);
               } else {
+                document.getElementById('destination_latitude').value = lat;
+                document.getElementById('destination_longitude').value = lon;
                 AuraBooking.updateRoute(null, coords);
               }
             });

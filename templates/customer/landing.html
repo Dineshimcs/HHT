@@ -1,138 +1,121 @@
 {% extends 'base/base.html' %}
 
-{% block title %}{{ PLATFORM_NAME }} - Elevating Everyday Movement{% endblock %}
+{% block title %}{{ PLATFORM_NAME }} - Mobile Mobility Experience{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section">
-  <div class="container hero-grid">
-    <div>
-      <div class="hero-badge">
-        <span>✦</span> Premium Transportation Platform
-      </div>
-      <h1 class="hero-title">
-        Move smarter.<br>
-        <span>Travel better.</span>
-      </h1>
-      <p class="hero-subtitle">
-        Book a premium city ride or hire a verified professional driver for your own vehicle with effortless real-time tracking and dynamic pricing.
-      </p>
+<div class="mobile-app-shell">
 
-      <div class="hero-cta-group">
-        <a href="{% url 'bookings:create' %}" class="btn btn-primary btn-lg">
-          🚗 Book a Ride
-        </a>
-        <a href="{% url 'bookings:create' %}?type=DRIVER_ONLY" class="btn btn-accent btn-lg">
-          👨‍✈️ Hire a Professional Driver
-        </a>
+  <!-- Mobile Top Search Pill & Banner -->
+  <div style="padding: 1.25rem 1.25rem 0.5rem;">
+    <!-- Mobile Interactive Search Pill Bar -->
+    <a href="{% url 'bookings:create' %}" class="mobile-search-pill mobile-touch-active" style="text-decoration: none;">
+      <span style="font-size: 1.3rem; color: var(--color-brand-blue);">🔍</span>
+      <div style="flex: 1;">
+        <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-text-primary);">Where to?</div>
+        <div style="font-size: 0.78rem; color: var(--color-text-muted);">Search pickup or destination...</div>
       </div>
-
-      <!-- Quick Search Widget -->
-      <div class="card" style="margin-top: 2.5rem; max-width: 540px;">
-        <h4 style="margin-bottom: 1rem;">Where are you going today?</h4>
-        <div class="form-group">
-          <label class="form-label">Pickup Location</label>
-          <input type="text" class="form-input" value="Connaught Place, New Delhi" placeholder="Enter pickup address">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Destination</label>
-          <input type="text" class="form-input" value="IGI Airport Terminal 3, New Delhi" placeholder="Where to?">
-        </div>
-        <a href="{% url 'bookings:create' %}" class="btn btn-primary" style="width: 100%;">
-          Get Fare Estimate & Book →
-        </a>
-      </div>
-    </div>
-
-    <!-- Generated Vector Hero Artwork -->
-    <div style="position: relative; width: 100%; height: 440px; border-radius: var(--radius-xl); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-lg);">
-      <canvas id="hero-vector-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
-      <div style="position: absolute; bottom: 2rem; left: 2rem; right: 2rem; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); padding: 1.25rem 1.5rem; border-radius: var(--radius-lg); color: #FFF; border: 1px solid rgba(255,255,255,0.1);">
-        <div class="flex items-center justify-between">
-          <div>
-            <div style="font-size: 0.8rem; color: #94A3B8; text-transform: uppercase;">Active Fleet Nearby</div>
-            <div style="font-size: 1.25rem; font-weight: bold;">348 Verified Drivers Online</div>
-          </div>
-          <span class="badge badge-success">● LIVE</span>
-        </div>
-      </div>
-    </div>
+      <span style="font-size: 0.8rem; background: var(--color-brand-blue-subtle); color: var(--color-brand-blue); font-weight: 700; padding: 0.3rem 0.6rem; border-radius: var(--radius-full);">Now ➔</span>
+    </a>
   </div>
-</section>
 
-<!-- Service Categories -->
-<section style="padding: 5rem 0; background-color: var(--color-surface); border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);">
-  <div class="container">
-    <div style="text-align: center; max-width: 640px; margin: 0 auto 3.5rem;">
-      <h2>Tailored Mobility Solutions</h2>
-      <p style="margin-top: 0.5rem;">Choose between full taxi booking or hiring a vetted chauffeur for your personal vehicle.</p>
-    </div>
-
-    <div class="grid grid-cols-4 gap-6">
-      <div class="feature-card">
-        <div class="feature-icon-wrapper">🚘</div>
-        <h3>City Taxis</h3>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Comfortable sedan rides for everyday city commutes with transparent fares.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-wrapper">👨‍✈️</div>
-        <h3>Driver Rental</h3>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Hire a professional driver to drive your personal vehicle safely by the hour.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-wrapper">🚙</div>
-        <h3>Executive SUVs</h3>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Spacious 6-seater vehicles for family trips, airport runs, and group travel.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-wrapper">⭐</div>
-        <h3>Luxury Fleet</h3>
-        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Premium luxury cars with top-rated executive chauffeurs for special occasions.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Safety & Trust Section -->
-<section style="padding: 5rem 0;">
-  <div class="container grid grid-cols-2 gap-8 items-center">
-    <div>
-      <h2>Your Safety is Our Top Priority</h2>
-      <p style="margin-top: 1rem; font-size: 1.05rem;">
-        Every driver undergoes rigorous background verification, document validation, and safety checks before joining our network.
-      </p>
-
-      <ul style="list-style: none; margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-        <li class="flex items-center gap-2">
-          <span style="color: var(--color-success); font-weight: bold;">✓</span> 100% Background-Vetted Professional Chauffeurs
-        </li>
-        <li class="flex items-center gap-2">
-          <span style="color: var(--color-success); font-weight: bold;">✓</span> Real-Time GPS Tracking & Shareable Trip Link
-        </li>
-        <li class="flex items-center gap-2">
-          <span style="color: var(--color-success); font-weight: bold;">✓</span> 24/7 Emergency SOS Button & Operations Desk
-        </li>
-      </ul>
-    </div>
-
-    <div class="card" style="padding: 2.5rem; background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-brand-blue-subtle) 100%);">
-      <h3 style="margin-bottom: 1rem;">Want to Drive & Earn?</h3>
-      <p style="margin-bottom: 1.5rem;">Join thousands of professional drivers earning daily payouts with transparent 15% platform commissions.</p>
-      <a href="{% url 'accounts:register_driver' %}" class="btn btn-primary">
-        Register as a Driver →
+  <!-- Recent Saved Locations horizontal chips -->
+  <div style="padding: 0.75rem 1.25rem;">
+    <div class="mobile-chip-scroller">
+      <a href="{% url 'bookings:create' %}?dest=Home" class="mobile-chip mobile-touch-active" style="text-decoration: none;">
+        <span>🏠</span> Home
+      </a>
+      <a href="{% url 'bookings:create' %}?dest=Office" class="mobile-chip mobile-touch-active" style="text-decoration: none;">
+        <span>💼</span> Work
+      </a>
+      <a href="{% url 'bookings:create' %}?dest=Airport" class="mobile-chip mobile-touch-active" style="text-decoration: none;">
+        <span>✈️</span> Airport T3
+      </a>
+      <a href="{% url 'bookings:create' %}?dest=Railway" class="mobile-chip mobile-touch-active" style="text-decoration: none;">
+        <span>🚉</span> Railway Stn
       </a>
     </div>
   </div>
-</section>
+
+  <!-- Quick Services Grid (4 Mobile App Tiles) -->
+  <div style="padding: 0.75rem 1.25rem;">
+    <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.85rem; color: var(--color-text-primary);">
+      Services
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem;">
+      <a href="{% url 'bookings:create' %}" class="mobile-card-tile mobile-touch-active" style="margin-bottom: 0;">
+        <div class="mobile-card-icon">🚖</div>
+        <div>
+          <div style="font-weight: 700; font-size: 0.95rem;">City Ride</div>
+          <div style="font-size: 0.75rem; color: var(--color-text-muted);">Fast urban cabs</div>
+        </div>
+      </a>
+
+      <a href="{% url 'bookings:create' %}?type=DRIVER_ONLY" class="mobile-card-tile mobile-touch-active" style="margin-bottom: 0;">
+        <div class="mobile-card-icon" style="background: var(--color-accent-subtle); color: var(--color-accent-dark);">👨‍✈️</div>
+        <div>
+          <div style="font-weight: 700; font-size: 0.95rem;">Hire Chauffeur</div>
+          <div style="font-size: 0.75rem; color: var(--color-text-muted);">For your car</div>
+        </div>
+      </a>
+
+      <a href="{% url 'bookings:create' %}?service=OUTSTATION" class="mobile-card-tile mobile-touch-active" style="margin-bottom: 0;">
+        <div class="mobile-card-icon" style="background: #ECFDF5; color: #10B981;">🛣️</div>
+        <div>
+          <div style="font-weight: 700; font-size: 0.95rem;">Intercity</div>
+          <div style="font-size: 0.75rem; color: var(--color-text-muted);">Outstation trips</div>
+        </div>
+      </a>
+
+      <a href="{% url 'bookings:create' %}?service=RENTAL" class="mobile-card-tile mobile-touch-active" style="margin-bottom: 0;">
+        <div class="mobile-card-icon" style="background: #FEE2E2; color: #EF4444;">⏱️</div>
+        <div>
+          <div style="font-weight: 700; font-size: 0.95rem;">Hourly Rental</div>
+          <div style="font-size: 0.75rem; color: var(--color-text-muted);">Multiple stops</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Live Vector Map Preview Canvas & Active Fleet Card -->
+  <div style="padding: 0.75rem 1.25rem;">
+    <div style="position: relative; width: 100%; height: 200px; border-radius: var(--radius-mobile-card); overflow: hidden; border: 1px solid var(--color-border); box-shadow: var(--shadow-sm);">
+      <canvas id="hero-vector-canvas" style="width: 100%; height: 100%; display: block;"></canvas>
+      <div style="position: absolute; bottom: 0.75rem; left: 0.75rem; right: 0.75rem; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(10px); padding: 0.85rem 1rem; border-radius: var(--radius-md); color: #FFF; border: 1px solid rgba(255,255,255,0.12);">
+        <div class="flex items-center justify-between">
+          <div>
+            <div style="font-size: 0.72rem; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.05em;">Nearby Drivers</div>
+            <div style="font-size: 0.95rem; font-weight: 700;">348 Chauffeurs Active</div>
+          </div>
+          <span class="badge badge-success" style="font-size: 0.7rem;">● LIVE MAP</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Drivers Drive & Earn Quick Action Tile -->
+  <div style="padding: 0.75rem 1.25rem 2rem;">
+    <div class="card" style="border-radius: var(--radius-mobile-card); background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-brand-blue-subtle) 100%); border: 1px solid var(--color-border);">
+      <div class="flex items-center justify-between" style="margin-bottom: 0.5rem;">
+        <span style="font-size: 1.5rem;">💸</span>
+        <span class="badge badge-info">Driver Chauffeurs</span>
+      </div>
+      <h4 style="font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem;">Drive & Earn Daily</h4>
+      <p style="font-size: 0.82rem; color: var(--color-text-secondary); margin-bottom: 1rem;">Earn competitive payouts with transparent 15% platform commissions.</p>
+      <a href="{% url 'accounts:register_driver' %}" class="btn btn-primary btn-sm mobile-touch-active" style="width: 100%; border-radius: var(--radius-full);">
+        Become a Driver →
+      </a>
+    </div>
+  </div>
+
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    AuraGraphics.initVectorBackground('hero-vector-canvas');
+    if (typeof AuraGraphics !== 'undefined') {
+      AuraGraphics.initVectorBackground('hero-vector-canvas');
+    }
   });
 </script>
 {% endblock %}

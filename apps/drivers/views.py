@@ -12,7 +12,16 @@ def dashboard(request):
         user=request.user,
         defaults={'license_number': f"LIC-{request.user.id:06d}"}
     )
-    return render(request, 'driver/dashboard.html', {'profile': profile})
+    from bookings.models import RideOffer, Booking
+    published_rides = RideOffer.objects.filter(driver=request.user).order_by('-created_at')
+    assigned_bookings = Booking.objects.filter(driver=profile).exclude(status__startswith='CANCELLED').order_by('-created_at')[:10]
+
+    return render(request, 'driver/dashboard.html', {
+        'profile': profile,
+        'published_rides': published_rides,
+        'assigned_bookings': assigned_bookings
+    })
+
 
 @login_required
 @require_POST

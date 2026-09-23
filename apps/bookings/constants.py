@@ -3,6 +3,8 @@ from django.db import models
 class BookingType(models.TextChoices):
     TAXI = 'TAXI', 'Taxi / Full Vehicle Booking'
     DRIVER_ONLY = 'DRIVER_ONLY', 'Professional Driver Rental (Customer Vehicle)'
+    CARPOOL = 'CARPOOL', 'Carpool / Shared Ride'
+
 
 class BookingStatus(models.TextChoices):
     REQUESTED = 'REQUESTED', 'Requested'

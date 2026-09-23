@@ -60,3 +60,74 @@ class BookingService:
                 booking.driver.save()
 
             return booking
+
+    @staticmethod
+    def publish_ride_offer(driver, origin_addr, origin_lat, origin_lon, drop_addr, drop_lat, drop_lon, departure_datetime, total_seats=3, price_per_seat=150.00, vehicle_model='Honda City', vehicle_number='DL-01-AB-1234', vehicle_category='SEDAN', description=''):
+        from .models import RideOffer, RideOfferStatus
+        offer = RideOffer.objects.create(
+            driver=driver,
+            origin_address=origin_addr,
+            origin_latitude=origin_lat,
+            origin_longitude=origin_lon,
+            destination_address=drop_addr,
+            destination_latitude=drop_lat,
+            destination_longitude=drop_lon,
+            departure_datetime=departure_datetime,
+            total_seats=total_seats,
+            available_seats=total_seats,
+            price_per_seat=price_per_seat,
+            vehicle_model=vehicle_model,
+            vehicle_number=vehicle_number,
+            vehicle_category=vehicle_category,
+            description=description,
+            status=RideOfferStatus.OPEN
+        )
+        return offer
+
+    @staticmethod
+    def book_seat_in_offer(ride_offer_id, customer, seats_booked=1):
+        from .models import RideOffer, Booking
+        from drivers.models import DriverProfile
+        with transaction.atomic():
+            offer = RideOffer.objects.select_for_update().get(id=ride_offer_id)
+            if offer.available_seats < seats_booked:
+                raise ValueError("Not enough seats available for this ride offer.")
+            
+            offer.available_seats -= seats_booked
+            offer.save()
+
+            distance_km = calculate_haversine_distance(
+                offer.origin_latitude, offer.origin_longitude,
+                offer.destination_latitude, offer.destination_longitude
+            )
+            duration_mins = max(5, int(distance_km * 2.5) + 5)
+            total_fare = offer.price_per_seat * seats_booked
+
+            # Get or create driver profile for the offering driver
+            driver_profile, _ = DriverProfile.objects.get_or_create(
+                user=offer.driver,
+                defaults={'license_number': f"LIC-{offer.driver.id:06d}"}
+            )
+
+            booking = Booking.objects.create(
+                customer=customer,
+                driver=driver_profile,
+                ride_offer=offer,
+                seats_booked=seats_booked,
+                booking_type=BookingType.CARPOOL if hasattr(BookingType, 'CARPOOL') else 'CARPOOL',
+                vehicle_category=offer.vehicle_category,
+                pickup_address=offer.origin_address,
+                pickup_latitude=offer.origin_latitude,
+                pickup_longitude=offer.origin_longitude,
+                destination_address=offer.destination_address,
+                destination_latitude=offer.destination_latitude,
+                destination_longitude=offer.destination_longitude,
+                estimated_distance=distance_km,
+                estimated_duration=duration_mins,
+                estimated_fare=total_fare,
+                final_fare=total_fare,
+                status=BookingStatus.DRIVER_ASSIGNED,
+                scheduled_at=offer.departure_datetime
+            )
+            return booking
+
