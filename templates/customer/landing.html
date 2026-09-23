@@ -5,72 +5,75 @@
 {% block content %}
 <div class="mobile-app-shell">
 
-  <!-- Mobile Top Search Pill & Banner -->
-  <div style="padding: 1.25rem 1.25rem 0.5rem;">
-    <!-- Mobile Interactive Search Pill Bar -->
+  <!-- Mobile Top Search Pill Bar -->
+  <div style="padding: 1rem 1rem 0.5rem;">
     <a href="{% url 'bookings:create' %}" class="mobile-search-pill mobile-touch-active" style="text-decoration: none;">
-      <span style="font-size: 1.3rem; color: var(--color-brand-blue);">🔍</span>
-      <div style="flex: 1;">
-        <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-text-primary);">Where to?</div>
-        <div style="font-size: 0.78rem; color: var(--color-text-muted);">Search pickup or destination...</div>
+      <span class="search-pill-icon">🔍</span>
+      <div class="search-pill-text">
+        <div class="search-pill-title">Where to?</div>
+        <div class="search-pill-subtitle">Search pickup or destination...</div>
       </div>
-      <span style="font-size: 0.8rem; background: var(--color-brand-blue-subtle); color: var(--color-brand-blue); font-weight: 700; padding: 0.3rem 0.6rem; border-radius: var(--radius-full);">Now ➔</span>
+      <span class="search-pill-cta">Now ➔</span>
     </a>
   </div>
 
-  <!-- Recent Saved Locations horizontal chips -->
-  <div style="padding: 0.75rem 1.25rem;">
-    <div class="mobile-chip-scroller">
+  <!-- Recent Saved Locations Grid -->
+  <div style="padding: 0.5rem 1rem 0.75rem;">
+    <div class="saved-locations-grid">
       <a href="{% url 'bookings:create' %}?dest=Home" class="mobile-chip mobile-touch-active" style="text-decoration: none;">
-        <span>🏠</span> Home
+        <span class="chip-icon">🏠</span>
+        <span class="chip-label">Home</span>
       </a>
       <a href="{% url 'bookings:create' %}?dest=Office" class="mobile-chip mobile-touch-active" style="text-decoration: none;">
-        <span>💼</span> Work
+        <span class="chip-icon">💼</span>
+        <span class="chip-label">Work</span>
       </a>
       <a href="{% url 'bookings:create' %}?dest=Airport" class="mobile-chip mobile-touch-active" style="text-decoration: none;">
-        <span>✈️</span> Airport T3
+        <span class="chip-icon">✈️</span>
+        <span class="chip-label">Airport T3</span>
       </a>
       <a href="{% url 'bookings:create' %}?dest=Railway" class="mobile-chip mobile-touch-active" style="text-decoration: none;">
-        <span>🚉</span> Railway Stn
+        <span class="chip-icon">🚆</span>
+        <span class="chip-label">Railway Stn</span>
       </a>
     </div>
   </div>
 
   <!-- Quick Services Grid (4 Mobile App Tiles) -->
-  <div style="padding: 0.75rem 1.25rem;">
-    <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.85rem; color: var(--color-text-primary);">
+  <div style="padding: 0.5rem 1rem 0.75rem;">
+    <div style="font-weight: 700; font-size: 1rem; margin-bottom: 0.75rem; color: var(--color-text-primary);">
       Services
     </div>
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.85rem;">
-      <a href="{% url 'bookings:create' %}" class="mobile-card-tile mobile-touch-active" style="margin-bottom: 0;">
-        <div class="mobile-card-icon">🚖</div>
+    <div class="service-cards-grid">
+      <a href="{% url 'bookings:create' %}" class="service-card-tile mobile-touch-active">
+        <div class="service-card-icon-box service-icon-city">🚖</div>
         <div>
-          <div style="font-weight: 700; font-size: 0.95rem;">City Ride</div>
-          <div style="font-size: 0.75rem; color: var(--color-text-muted);">Fast urban cabs</div>
+          <div class="service-card-title">City Ride</div>
+          <div class="service-card-desc">Fast urban cabs</div>
         </div>
       </a>
 
-      <a href="{% url 'bookings:create' %}?type=DRIVER_ONLY" class="mobile-card-tile mobile-touch-active" style="margin-bottom: 0;">
-        <div class="mobile-card-icon" style="background: var(--color-accent-subtle); color: var(--color-accent-dark);">👨‍✈️</div>
+      <a href="{% url 'bookings:create' %}?type=DRIVER_ONLY" class="service-card-tile mobile-touch-active">
+        <div class="service-card-icon-box service-icon-chauffeur">👨‍✈️</div>
         <div>
-          <div style="font-weight: 700; font-size: 0.95rem;">Hire Chauffeur</div>
-          <div style="font-size: 0.75rem; color: var(--color-text-muted);">For your car</div>
+          <div class="service-card-title">Hire Chauffeur</div>
+          <div class="service-card-desc">For your car</div>
         </div>
       </a>
 
-      <a href="{% url 'bookings:create' %}?service=OUTSTATION" class="mobile-card-tile mobile-touch-active" style="margin-bottom: 0;">
-        <div class="mobile-card-icon" style="background: #ECFDF5; color: #10B981;">🛣️</div>
+      <a href="{% url 'bookings:create' %}?service=OUTSTATION" class="service-card-tile mobile-touch-active">
+        <div class="service-card-icon-box service-icon-intercity">🛣️</div>
         <div>
-          <div style="font-weight: 700; font-size: 0.95rem;">Intercity</div>
-          <div style="font-size: 0.75rem; color: var(--color-text-muted);">Outstation trips</div>
+          <div class="service-card-title">Intercity</div>
+          <div class="service-card-desc">Outstation trips</div>
         </div>
       </a>
 
-      <a href="{% url 'bookings:create' %}?service=RENTAL" class="mobile-card-tile mobile-touch-active" style="margin-bottom: 0;">
-        <div class="mobile-card-icon" style="background: #FEE2E2; color: #EF4444;">⏱️</div>
+      <a href="{% url 'bookings:create' %}?service=RENTAL" class="service-card-tile mobile-touch-active">
+        <div class="service-card-icon-box service-icon-rental">⏱️</div>
         <div>
-          <div style="font-weight: 700; font-size: 0.95rem;">Hourly Rental</div>
-          <div style="font-size: 0.75rem; color: var(--color-text-muted);">Multiple stops</div>
+          <div class="service-card-title">Hourly Rental</div>
+          <div class="service-card-desc">Multiple stops</div>
         </div>
       </a>
     </div>

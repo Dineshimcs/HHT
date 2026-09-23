@@ -1,13 +1,13 @@
-<header class="mobile-app-header-container" style="background-color: var(--color-surface); border-bottom: 1px solid var(--color-border); position: sticky; top: 0; z-index: 800; box-shadow: var(--shadow-xs);">
-  <div class="container flex items-center justify-between" style="height: 64px;">
+<header class="mobile-app-header-container">
+  <div class="container navbar-inner">
     
     <!-- Brand Logo & Mobile Native App Identity -->
-    <a href="{% url 'landing' %}" class="flex items-center gap-2" style="text-decoration: none;">
-      <div data-aura-logo="full" data-width="160" data-height="40"></div>
+    <a href="{% url 'landing' %}" class="flex items-center" style="text-decoration: none; flex-shrink: 1; max-width: 140px;">
+      <div data-aura-logo="full" data-width="135" data-height="34" style="max-width: 100%;"></div>
     </a>
 
     <!-- Nav Links (Desktop) & Quick Mobile Controls -->
-    <nav class="flex items-center gap-3">
+    <nav class="nav-actions-group">
       <div class="desktop-nav-links flex items-center gap-5">
         <a href="{% url 'landing' %}" style="font-weight: 600; color: var(--color-text-primary); font-size: 0.9rem;">Home</a>
         <a href="{% url 'bookings:create' %}" style="font-weight: 600; color: var(--color-text-primary); font-size: 0.9rem;">Book Ride</a>
@@ -16,21 +16,21 @@
       </div>
 
       <!-- Theme Switcher Pill -->
-      <button data-theme-toggle class="mobile-touch-active btn btn-secondary btn-sm" title="Toggle Theme" style="border-radius: var(--radius-full); width: 38px; height: 38px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+      <button data-theme-toggle class="mobile-touch-active btn btn-secondary btn-sm" title="Toggle Theme" style="border-radius: var(--radius-full); width: 34px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.95rem; flex-shrink: 0;">
         🌙
       </button>
 
       {% if user.is_authenticated %}
-        <a href="{% url 'customers:dashboard' %}" class="mobile-touch-active flex items-center gap-2" style="text-decoration: none; padding: 0.35rem 0.75rem; background: var(--color-surface-hover); border-radius: var(--radius-full); border: 1px solid var(--color-border);">
-          <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--color-brand-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">
+        <a href="{% url 'customers:dashboard' %}" class="mobile-touch-active flex items-center gap-2" style="text-decoration: none; padding: 0.3rem 0.65rem; background: var(--color-surface-hover); border-radius: var(--radius-full); border: 1px solid var(--color-border); flex-shrink: 0;">
+          <div style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-brand-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 700;">
             {{ user.username|slice:":1"|upper }}
           </div>
-          <span class="user-greeting-name" style="font-size: 0.82rem; font-weight: 600; color: var(--color-text-primary);">{{ user.first_name|default:user.username }}</span>
+          <span class="user-greeting-name" style="font-size: 0.8rem; font-weight: 600; color: var(--color-text-primary);">{{ user.first_name|default:user.username }}</span>
         </a>
-        <a href="{% url 'accounts:logout' %}" class="desktop-only btn btn-secondary btn-sm" style="border-radius: var(--radius-full);">Logout</a>
+        <a href="{% url 'accounts:logout' %}" class="desktop-only btn btn-secondary btn-sm navbar-btn-login">Logout</a>
       {% else %}
-        <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-sm" style="border-radius: var(--radius-full);">Login</a>
-        <a href="{% url 'accounts:register_customer' %}" class="btn btn-primary btn-sm" style="border-radius: var(--radius-full);">Sign Up</a>
+        <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-sm navbar-btn-login">Login</a>
+        <a href="{% url 'accounts:register_customer' %}" class="btn btn-primary btn-sm navbar-btn-signup">Sign Up</a>
       {% endif %}
     </nav>
   </div>

@@ -3,13 +3,29 @@
 {% block title %}Live Trip Status - {{ PLATFORM_NAME }}{% endblock %}
 
 {% block content %}
-{% extends 'base/base.html' %}
-
-{% block title %}Live Trip - {{ PLATFORM_NAME }}{% endblock %}
-
-{% block content %}
-<div class="mobile-booking-wrapper" style="height: calc(100vh - 64px - 68px);">
+<div class="mobile-booking-wrapper" style="height: calc(100vh - 56px - 58px); position: relative;">
   
+  <!-- Floating Top Live Tracking & ETA Status Card -->
+  <div class="live-trip-top-overlay flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <span class="live-pulse-dot"></span>
+      <div>
+        <div style="font-size: 0.72rem; font-weight: 700; text-transform: uppercase; opacity: 0.85;">Live GPS Tracking</div>
+        <div style="font-size: 0.92rem; font-weight: 800;" id="top-live-status-text">Driver En Route</div>
+      </div>
+    </div>
+
+    <div style="text-align: right;" class="flex items-center gap-3">
+      <div>
+        <div style="font-size: 0.95rem; font-weight: 800; color: var(--color-brand-blue);" id="live-eta-clock">12 Mins</div>
+        <div style="font-size: 0.7rem; opacity: 0.8;" id="live-dist-val">4.2 km left</div>
+      </div>
+      <button id="btn-toggle-simulation" class="btn btn-primary btn-sm" style="border-radius: var(--radius-full); padding: 0.25rem 0.6rem; font-size: 0.72rem;" title="Toggle Live Simulation">
+        ▶ Demo
+      </button>
+    </div>
+  </div>
+
   <!-- Fullscreen Map Container -->
   <div class="mobile-fullscreen-map">
     <div id="aura-live-trip-map" style="width: 100%; height: 100%;"></div>
@@ -19,34 +35,60 @@
   <div class="mobile-bottom-sheet open" style="z-index: 500;">
     <div class="mobile-sheet-handle"></div>
 
-    <div class="flex items-center justify-between" style="margin-bottom: 0.85rem;">
+    <!-- Live Trip Milestone Progress Stepper -->
+    <div class="trip-stepper">
+      <div class="trip-stepper-track"></div>
+      <div class="trip-stepper-progress" id="stepper-progress-bar" style="width: 33%;"></div>
+
+      <div class="stepper-step completed" id="step-1">
+        <div class="stepper-icon">✓</div>
+        <div class="stepper-label">Booked</div>
+      </div>
+
+      <div class="stepper-step active" id="step-2">
+        <div class="stepper-icon">🚗</div>
+        <div class="stepper-label">En Route</div>
+      </div>
+
+      <div class="stepper-step" id="step-3">
+        <div class="stepper-icon">📍</div>
+        <div class="stepper-label">Pickup</div>
+      </div>
+
+      <div class="stepper-step" id="step-4">
+        <div class="stepper-icon">🏁</div>
+        <div class="stepper-label">Drop</div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between" style="margin-bottom: 0.75rem;">
       <div>
         <span class="badge {% if 'CANCELLED' in booking.status %}badge-danger{% elif booking.status == 'TRIP_COMPLETED' %}badge-success{% else %}badge-info{% endif %}" id="trip-status-badge">
           {{ booking.get_status_display }}
         </span>
-        <h3 style="font-size: 1.05rem; margin-top: 0.25rem;" id="trip-status-desc">
+        <h3 style="font-size: 1rem; margin-top: 0.25rem;" id="trip-status-desc">
           {% if booking.ride_offer %}
             Carpool Reserved • Ref {{ booking.booking_reference }}
           {% else %}
-            Taxi Ride • Ref {{ booking.booking_reference }}
+            Instant Taxi • Ref {{ booking.booking_reference }}
           {% endif %}
         </h3>
       </div>
       
       <!-- Live Ride Safety OTP Pill -->
-      <div style="background: var(--color-brand-blue-subtle); border: 1px dashed var(--color-brand-blue); padding: 0.35rem 0.75rem; border-radius: var(--radius-full); text-align: center;">
-        <div style="font-size: 0.68rem; color: var(--color-brand-blue); font-weight: 700; text-transform: uppercase;">START OTP</div>
-        <div style="font-size: 1.1rem; font-weight: 800; color: var(--color-brand-blue); letter-spacing: 0.1em;">8492</div>
+      <div style="background: var(--color-brand-blue-subtle); border: 1px dashed var(--color-brand-blue); padding: 0.3rem 0.65rem; border-radius: var(--radius-full); text-align: center;">
+        <div style="font-size: 0.65rem; color: var(--color-brand-blue); font-weight: 700; text-transform: uppercase;">START OTP</div>
+        <div style="font-size: 1.05rem; font-weight: 800; color: var(--color-brand-blue); letter-spacing: 0.1em;">8492</div>
       </div>
     </div>
 
     <!-- Driver & Vehicle Details Mobile Card -->
-    <div class="mobile-card-tile" style="margin-bottom: 0.85rem; padding: 0.85rem;">
-      <div class="mobile-card-icon" style="background: var(--color-brand-blue); color: white;">
+    <div class="mobile-card-tile" style="margin-bottom: 0.75rem; padding: 0.75rem;">
+      <div class="service-card-icon-box service-icon-city" style="background: var(--color-brand-blue); color: white;">
         👨‍✈️
       </div>
-      <div style="flex: 1;">
-        <div style="font-weight: 700; font-size: 0.95rem;">
+      <div style="flex: 1; min-width: 0;">
+        <div style="font-weight: 700; font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           {% if booking.driver %}
             {{ booking.driver.user.get_full_name|default:booking.driver.user.username }}
           {% elif booking.ride_offer %}
@@ -65,13 +107,13 @@
         </div>
       </div>
 
-      <a href="tel:+919876543210" class="btn btn-primary btn-sm mobile-touch-active" style="border-radius: var(--radius-full); padding: 0.5rem 0.85rem;" title="Call Driver">
+      <a href="tel:+919876543210" class="btn btn-primary btn-sm mobile-touch-active" style="border-radius: var(--radius-full); padding: 0.4rem 0.75rem; font-size: 0.8rem;" title="Call Driver">
         📞 Call
       </a>
     </div>
 
     <!-- Route Address Summary -->
-    <div style="font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.25rem; background: var(--color-surface-hover); padding: 0.75rem; border-radius: var(--radius-md);">
+    <div style="font-size: 0.78rem; color: var(--color-text-secondary); margin-bottom: 0.85rem; display: flex; flex-direction: column; gap: 0.25rem; background: var(--color-surface-hover); padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
       <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">📍 <strong>Pickup:</strong> {{ booking.pickup_address }}</div>
       <div style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">🏁 <strong>Drop:</strong> {{ booking.destination_address }}</div>
     </div>
@@ -98,7 +140,7 @@
 <div class="modal-overlay" id="sos-modal">
   <div class="modal-container">
     <h3 style="color: var(--color-danger); margin-bottom: 0.5rem;">🚨 Emergency Safety SOS</h3>
-    <p style="margin-bottom: 1.5rem;">If you feel unsafe or require immediate assistance, our 24/7 security desk and emergency response will be notified with your live GPS location.</p>
+    <p style="margin-bottom: 1.5rem; font-size: 0.9rem;">If you feel unsafe or require immediate assistance, our 24/7 security desk and emergency response will be notified with your live GPS location.</p>
     
     <div class="flex flex-col gap-3">
       <button class="btn btn-danger btn-lg" onclick="alert('Emergency Alert Sent! Support team is contacting you and local authorities.'); document.getElementById('sos-modal').classList.remove('active');">
@@ -115,35 +157,137 @@
 {% block extra_js %}
 <script>
   document.addEventListener('DOMContentLoaded', async () => {
-    const pickupCoords = [{{ booking.pickup_latitude }}, {{ booking.pickup_longitude }}];
-    const dropCoords = [{{ booking.destination_latitude }}, {{ booking.destination_longitude }}];
+    const pLat = parseFloat("{{ booking.pickup_latitude|default:'28.6139' }}") || 28.6139;
+    const pLon = parseFloat("{{ booking.pickup_longitude|default:'77.2090' }}") || 77.2090;
+    const dLat = parseFloat("{{ booking.destination_latitude|default:'28.5562' }}") || 28.5562;
+    const dLon = parseFloat("{{ booking.destination_longitude|default:'77.1000' }}") || 77.1000;
+
+    const pickupCoords = [pLat, pLon];
+    const dropCoords = [dLat, dLon];
 
     const map = AuraMap.initMap('aura-live-trip-map', {
       center: pickupCoords,
-      zoom: 13
+      zoom: 14
     });
 
-    if (map && window.AuraMap) {
-      const routeData = await AuraMap.renderRoadRoute('aura-live-trip-map', pickupCoords, dropCoords);
-      
-      // Animate driver moving along OSRM route points
-      if (routeData && routeData.latLngs && routeData.latLngs.length > 0) {
-        const routePoints = routeData.latLngs;
-        let pointIndex = 0;
-        
-        AuraMap.updateDriverMarker('aura-live-trip-map', routePoints[0]);
+    if (map) {
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 200);
+    }
 
-        const animateInterval = setInterval(() => {
-          pointIndex++;
-          if (pointIndex < routePoints.length) {
-            AuraMap.updateDriverMarker('aura-live-trip-map', routePoints[pointIndex]);
-          } else {
-            clearInterval(animateInterval);
-          }
-        }, 800);
-      } else {
-        AuraMap.updateDriverMarker('aura-live-trip-map', [pickupCoords[0] + 0.002, pickupCoords[1] + 0.002]);
+    if (!map || !window.AuraMap) return;
+
+    // Render smooth OSRM route polyline
+    const routeData = await AuraMap.renderRoadRoute('aura-live-trip-map', pickupCoords, dropCoords);
+    
+    let isSimulating = true;
+    let animateInterval = null;
+
+    const routePoints = (routeData && routeData.latLngs && routeData.latLngs.length > 0) 
+      ? routeData.latLngs 
+      : [pickupCoords, [(pickupCoords[0] + dropCoords[0])/2, (pickupCoords[1] + dropCoords[1])/2], dropCoords];
+
+    const totalDistanceKm = (routeData && routeData.distanceKm) ? routeData.distanceKm : 4.5;
+    const totalDurationMins = (routeData && routeData.durationMins) ? routeData.durationMins : 12;
+
+    let pointIndex = 0;
+    const totalPoints = routePoints.length;
+
+    // Initial driver marker setup
+    AuraMap.updateDriverMarker('aura-live-trip-map', routePoints[0]);
+
+    const updateTrackingUI = () => {
+      if (pointIndex >= totalPoints) pointIndex = totalPoints - 1;
+
+      const currentCoords = routePoints[pointIndex];
+      AuraMap.updateDriverMarker('aura-live-trip-map', currentCoords);
+
+      // Pan map smoothly to follow driver
+      if (map && map.panTo) {
+        map.panTo(currentCoords, { animate: true, duration: 0.5 });
       }
+
+      // Progress calculation (0 to 100%)
+      const progressFraction = pointIndex / (totalPoints - 1 || 1);
+      const remainingDistKm = (totalDistanceKm * (1 - progressFraction)).toFixed(1);
+      const remainingMins = Math.max(1, Math.round(totalDurationMins * (1 - progressFraction)));
+
+      // Update ETA & Distance UI
+      const etaClock = document.getElementById('live-eta-clock');
+      const distVal = document.getElementById('live-dist-val');
+      const statusText = document.getElementById('top-live-status-text');
+      const progressBar = document.getElementById('stepper-progress-bar');
+      const step3 = document.getElementById('step-3');
+      const step4 = document.getElementById('step-4');
+
+      if (etaClock) etaClock.innerText = progressFraction >= 0.95 ? 'Arrived' : `${remainingMins} Mins`;
+      if (distVal) distVal.innerText = progressFraction >= 0.95 ? '0.0 km' : `${remainingDistKm} km left`;
+      if (progressBar) progressBar.style.width = `${Math.min(100, Math.max(33, progressFraction * 100))}%`;
+
+      // Stepper Stage Updates
+      if (progressFraction > 0.4 && step3 && !step3.classList.contains('completed')) {
+        step3.classList.add('completed', 'active');
+        if (statusText) statusText.innerText = 'Driver Picked Up';
+        if (window.AuraApp) AuraApp.showToast('Driver has arrived at pickup location!', 'info');
+      }
+
+      if (progressFraction >= 0.95 && step4 && !step4.classList.contains('completed')) {
+        step4.classList.add('completed', 'active');
+        if (statusText) statusText.innerText = 'Arrived at Destination';
+        const badge = document.getElementById('trip-status-badge');
+        if (badge) {
+          badge.className = 'badge badge-success';
+          badge.innerText = 'Trip Completed';
+        }
+        if (window.AuraApp) AuraApp.showToast('You have arrived at your destination! 🎉', 'success');
+      }
+    };
+
+    const startAnimation = () => {
+      if (animateInterval) clearInterval(animateInterval);
+      animateInterval = setInterval(() => {
+        pointIndex++;
+        if (pointIndex < totalPoints) {
+          updateTrackingUI();
+        } else {
+          clearInterval(animateInterval);
+          isSimulating = false;
+          const toggleBtn = document.getElementById('btn-toggle-simulation');
+          if (toggleBtn) toggleBtn.innerText = '↺ Restart';
+        }
+      }, 700);
+    };
+
+    startAnimation();
+
+    // Toggle Play/Pause Simulation button
+    const toggleBtn = document.getElementById('btn-toggle-simulation');
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', () => {
+        if (pointIndex >= totalPoints - 1) {
+          // Restart simulation
+          pointIndex = 0;
+          const step3 = document.getElementById('step-3');
+          const step4 = document.getElementById('step-4');
+          if (step3) step3.classList.remove('completed', 'active');
+          if (step4) step4.classList.remove('completed', 'active');
+          isSimulating = true;
+          toggleBtn.innerText = '⏸ Pause';
+          startAnimation();
+          return;
+        }
+
+        if (isSimulating) {
+          clearInterval(animateInterval);
+          isSimulating = false;
+          toggleBtn.innerText = '▶ Resume';
+        } else {
+          isSimulating = true;
+          toggleBtn.innerText = '⏸ Pause';
+          startAnimation();
+        }
+      });
     }
   });
 </script>
