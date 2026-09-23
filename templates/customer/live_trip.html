@@ -202,6 +202,7 @@
 
       const currentCoords = routePoints[pointIndex];
       AuraMap.updateDriverMarker('aura-live-trip-map', currentCoords);
+      AuraMap.updateNavigationProgress('aura-live-trip-map', pointIndex, routePoints);
 
       // Pan map smoothly to follow driver
       if (map && map.panTo) {
@@ -213,10 +214,33 @@
       const remainingDistKm = (totalDistanceKm * (1 - progressFraction)).toFixed(1);
       const remainingMins = Math.max(1, Math.round(totalDurationMins * (1 - progressFraction)));
 
+      // Update turn-by-turn navigation step instruction
+      if (routeData && routeData.steps && routeData.steps.length > 0) {
+        const stepIdx = Math.min(
+          routeData.steps.length - 1,
+          Math.floor(progressFraction * routeData.steps.length)
+        );
+        const currentStep = routeData.steps[stepIdx];
+        const statusText = document.getElementById('top-live-status-text');
+        
+        if (statusText && currentStep) {
+          let turnSymbol = '⬆';
+          if (currentStep.modifier.includes('left')) turnSymbol = '↰';
+          if (currentStep.modifier.includes('right')) turnSymbol = '↱';
+          if (currentStep.type.includes('rotary') || currentStep.type.includes('roundabout')) turnSymbol = '🔄';
+          if (currentStep.type.includes('arrive')) turnSymbol = '🏁';
+
+          if (progressFraction >= 0.95) {
+            statusText.innerText = '🏁 Arrived at Destination';
+          } else {
+            statusText.innerText = `${turnSymbol} In ${currentStep.distanceM}m, ${currentStep.type} on ${currentStep.name}`;
+          }
+        }
+      }
+
       // Update ETA & Distance UI
       const etaClock = document.getElementById('live-eta-clock');
       const distVal = document.getElementById('live-dist-val');
-      const statusText = document.getElementById('top-live-status-text');
       const progressBar = document.getElementById('stepper-progress-bar');
       const step3 = document.getElementById('step-3');
       const step4 = document.getElementById('step-4');
@@ -228,13 +252,11 @@
       // Stepper Stage Updates
       if (progressFraction > 0.4 && step3 && !step3.classList.contains('completed')) {
         step3.classList.add('completed', 'active');
-        if (statusText) statusText.innerText = 'Driver Picked Up';
         if (window.AuraApp) AuraApp.showToast('Driver has arrived at pickup location!', 'info');
       }
 
       if (progressFraction >= 0.95 && step4 && !step4.classList.contains('completed')) {
         step4.classList.add('completed', 'active');
-        if (statusText) statusText.innerText = 'Arrived at Destination';
         const badge = document.getElementById('trip-status-badge');
         if (badge) {
           badge.className = 'badge badge-success';
