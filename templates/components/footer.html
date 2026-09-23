@@ -1,14 +1,14 @@
-<footer style="background-color: var(--color-primary-dark); color: #94A3B8; padding: 4rem 0 2rem; border-top: 1px solid var(--color-border-strong);">
-  <div class="container grid grid-cols-4 gap-8" style="margin-bottom: 3rem;">
+<footer style="background-color: var(--color-primary-dark); color: #94A3B8; padding: 2.5rem 0 2rem; border-top: 1px solid var(--color-border-strong);">
+  <div class="container grid grid-cols-1 grid-cols-4-md gap-6" style="margin-bottom: 2rem;">
     <div>
-      <div data-aura-logo="icon" data-width="48" data-height="48" style="margin-bottom: 1rem;"></div>
-      <h3 style="color: #FFFFFF; font-size: 1.25rem; margin-bottom: 0.5rem;">{{ PLATFORM_NAME }}</h3>
-      <p style="color: #94A3B8; font-size: 0.9rem;">{{ PLATFORM_TAGLINE }} Next-generation mobility platform designed for safety, comfort, and reliability.</p>
+      <div data-aura-logo="icon" data-width="44" data-height="44" style="margin-bottom: 0.75rem;"></div>
+      <h3 style="color: #FFFFFF; font-size: 1.15rem; margin-bottom: 0.5rem;">{{ PLATFORM_NAME }}</h3>
+      <p style="color: #94A3B8; font-size: 0.85rem;">{{ PLATFORM_TAGLINE }} Next-generation mobility platform designed for safety, comfort, and reliability.</p>
     </div>
     
     <div>
-      <h4 style="color: #FFFFFF; font-size: 1rem; margin-bottom: 1rem;">Services</h4>
-      <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+      <h4 style="color: #FFFFFF; font-size: 0.95rem; margin-bottom: 0.75rem;">Services</h4>
+      <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem;">
         <li><a href="{% url 'bookings:create' %}" style="color: #CBD5E1;">City Taxi Rides</a></li>
         <li><a href="{% url 'bookings:create' %}" style="color: #CBD5E1;">Hire Driver for Own Vehicle</a></li>
         <li><a href="{% url 'bookings:create' %}" style="color: #CBD5E1;">Outstation Rentals</a></li>
@@ -17,8 +17,8 @@
     </div>
 
     <div>
-      <h4 style="color: #FFFFFF; font-size: 1rem; margin-bottom: 1rem;">Partners</h4>
-      <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+      <h4 style="color: #FFFFFF; font-size: 0.95rem; margin-bottom: 0.75rem;">Partners</h4>
+      <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem;">
         <li><a href="{% url 'accounts:register_driver' %}" style="color: #CBD5E1;">Become a Vetted Driver</a></li>
         <li><a href="{% url 'drivers:dashboard' %}" style="color: #CBD5E1;">Driver Dashboard</a></li>
         <li><a href="#" style="color: #CBD5E1;">Fleet Partner Program</a></li>
@@ -27,8 +27,8 @@
     </div>
 
     <div>
-      <h4 style="color: #FFFFFF; font-size: 1rem; margin-bottom: 1rem;">Operations</h4>
-      <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+      <h4 style="color: #FFFFFF; font-size: 0.95rem; margin-bottom: 0.75rem;">Operations</h4>
+      <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.85rem;">
         <li><a href="{% url 'admin_ops:dashboard' %}" style="color: #CBD5E1;">Ops Management Portal</a></li>
         <li><a href="/404.html" style="color: #CBD5E1;">404 Page Preview</a></li>
         <li><a href="/offline.html" style="color: #CBD5E1;">Offline Page Preview</a></li>
@@ -36,12 +36,23 @@
     </div>
   </div>
 
-  <div class="container flex items-center justify-between" style="border-top: 1px solid #1E293B; padding-top: 2rem; font-size: 0.85rem;">
-    <p>© 2026 {{ PLATFORM_NAME }} Platform. All rights reserved. Zero stock-asset dependency architecture.</p>
-    <div class="flex gap-4">
+  <div class="container footer-bottom-inner" style="border-top: 1px solid #1E293B; padding-top: 1.5rem; font-size: 0.8rem; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem;">
+    <p>© 2026 {{ PLATFORM_NAME }} Platform. All rights reserved.</p>
+    <div class="flex gap-4" style="flex-wrap: wrap;">
       <a href="#" style="color: #94A3B8;">Privacy Policy</a>
       <a href="#" style="color: #94A3B8;">Terms of Service</a>
       <a href="#" style="color: #94A3B8;">Security Audit</a>
     </div>
   </div>
 </footer>
+
+<style>
+  .grid-cols-4-md {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+  @media (min-width: 768px) {
+    .grid-cols-4-md {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>
